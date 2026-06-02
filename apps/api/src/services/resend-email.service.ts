@@ -1,9 +1,10 @@
 import { injectable } from "inversify";
 import { Resend } from "resend";
-import type { EmailService } from "./email.service";
+import type { EmailService, ContactSubmission } from "./email.service";
 import {
   verificationEmail,
   passwordResetEmail,
+  contactNotificationEmail,
   EmailContent,
 } from "./email-templates";
 
@@ -24,13 +25,18 @@ export class ResendEmailService implements EmailService {
     this.from = process.env.EMAIL_FROM ?? "LISS11' Alumni <onboarding@resend.dev>";
   }
 
-  private async send(to: string, content: EmailContent): Promise<void> {
+  private async send(
+    to: string,
+    content: EmailContent,
+    replyTo?: string,
+  ): Promise<void> {
     const { error } = await this.client.emails.send({
       from: this.from,
       to,
       subject: content.subject,
       html: content.html,
       text: content.text,
+      ...(replyTo ? { replyTo } : {}),
     });
     if (error) {
       throw new Error(`Resend failed to send "${content.subject}": ${error.message}`);
@@ -43,5 +49,10 @@ export class ResendEmailService implements EmailService {
 
   sendPasswordReset(to: string, resetUrl: string): Promise<void> {
     return this.send(to, passwordResetEmail(resetUrl));
+  }
+
+  sendContactNotification(to: string, submission: ContactSubmission): Promise<void> {
+    // Reply-to the submitter so the inbox owner can respond directly.
+    return this.send(to, contactNotificationEmail(submission), submission.email);
   }
 }

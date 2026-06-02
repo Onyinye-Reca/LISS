@@ -33,6 +33,13 @@ export const ResetPasswordSchema = z.object({
 });
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 
+export const ContactSchema = z.object({
+  name: z.string().min(2).max(120),
+  email: z.string().email(),
+  message: z.string().min(10).max(5000),
+});
+export type ContactInput = z.infer<typeof ContactSchema>;
+
 /** Shape returned to the client for the current member (never includes the password hash). */
 export interface MemberView {
   id: string;

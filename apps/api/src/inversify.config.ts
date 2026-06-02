@@ -4,7 +4,9 @@ import { TYPES } from "./types";
 import { MemberRepository } from "./repositories/member.repository";
 import { VerificationTokenRepository } from "./repositories/verification-token.repository";
 import { PasswordResetTokenRepository } from "./repositories/password-reset-token.repository";
+import { ContactMessageRepository } from "./repositories/contact-message.repository";
 import { AuthService } from "./services/auth.service";
+import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
 import { ResendEmailService } from "./services/resend-email.service";
 
@@ -21,7 +23,11 @@ export function buildContainer(): Container {
   container
     .bind(TYPES.PasswordResetTokenRepository)
     .to(PasswordResetTokenRepository);
+  container
+    .bind(TYPES.ContactMessageRepository)
+    .to(ContactMessageRepository);
   container.bind(TYPES.AuthService).to(AuthService);
+  container.bind(TYPES.ContactService).to(ContactService);
 
   // Use real email when configured; otherwise log links to the console so
   // local dev needs no credentials (PRD section 8 + Group C plan).

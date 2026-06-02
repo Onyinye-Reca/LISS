@@ -4,6 +4,8 @@ export const TYPES = {
   MemberRepository: Symbol.for("MemberRepository"),
   VerificationTokenRepository: Symbol.for("VerificationTokenRepository"),
   PasswordResetTokenRepository: Symbol.for("PasswordResetTokenRepository"),
+  ContactMessageRepository: Symbol.for("ContactMessageRepository"),
   AuthService: Symbol.for("AuthService"),
+  ContactService: Symbol.for("ContactService"),
   EmailService: Symbol.for("EmailService"),
 } as const;
