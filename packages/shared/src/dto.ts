@@ -17,6 +17,22 @@ export const LoginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof LoginSchema>;
 
+export const ResendVerificationSchema = z.object({
+  email: z.string().email(),
+});
+export type ResendVerificationInput = z.infer<typeof ResendVerificationSchema>;
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(128),
+});
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+
 /** Shape returned to the client for the current member (never includes the password hash). */
 export interface MemberView {
   id: string;

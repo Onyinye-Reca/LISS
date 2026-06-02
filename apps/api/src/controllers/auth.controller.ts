@@ -1,7 +1,13 @@
 import { Request, Response } from "express";
 import { controller, httpGet, httpPost } from "inversify-express-utils";
 import { inject } from "inversify";
-import { RegisterSchema, LoginSchema } from "@liss11/shared";
+import {
+  RegisterSchema,
+  LoginSchema,
+  ResendVerificationSchema,
+  ForgotPasswordSchema,
+  ResetPasswordSchema,
+} from "@liss11/shared";
 import { TYPES } from "../types";
 import { AuthService, AuthError } from "../services/auth.service";
 import { validateBody } from "../middleware/validate";
@@ -33,6 +39,57 @@ export class AuthController {
         maxAge: this.auth.tokenTtlMs,
       });
       res.json({ member });
+    } catch (err) {
+      this.handle(err, res);
+    }
+  }
+
+  @httpGet("/verify")
+  async verify(req: Request, res: Response) {
+    const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    try {
+      await this.auth.verify(token);
+      // Land the user back on the web app with a success flag.
+      res.redirect(`${webOrigin}/?verified=1`);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        return res.redirect(`${webOrigin}/?verified=0`);
+      }
+      this.handle(err, res);
+    }
+  }
+
+  @httpPost("/resend-verification", validateBody(ResendVerificationSchema))
+  async resendVerification(req: Request, res: Response) {
+    try {
+      await this.auth.resendVerification(req.body.email);
+      // Generic response — never reveal whether the email exists.
+      res.json({ ok: true, message: "If that account exists, a link has been sent." });
+    } catch (err) {
+      this.handle(err, res);
+    }
+  }
+
+  @httpPost("/forgot-password", validateBody(ForgotPasswordSchema))
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      await this.auth.requestPasswordReset(req.body.email);
+      // Generic response — never reveal whether the email exists.
+      res.json({ ok: true, message: "If that account exists, a reset link has been sent." });
+    } catch (err) {
+      this.handle(err, res);
+    }
+  }
+
+  @httpPost("/reset-password", validateBody(ResetPasswordSchema))
+  async resetPassword(req: Request, res: Response) {
+    try {
+      await this.auth.resetPassword(req.body.token, req.body.password);
+      // Clear any cookie on this client; other sessions are invalidated by
+      // the tokenVersion bump.
+      res.clearCookie("token", { path: "/" });
+      res.json({ ok: true, message: "Password updated. Please log in." });
     } catch (err) {
       this.handle(err, res);
     }

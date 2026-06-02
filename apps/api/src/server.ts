@@ -6,15 +6,26 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { buildContainer } from "./inversify.config";
+import { TYPES } from "./types";
+import { MemberRepository } from "./repositories/member.repository";
+import { configureAuthLookup } from "./middleware/auth";
+
+import { requireCsrf } from "./middleware/csrf";
 
 // Import controllers so their decorators register with the container.
 import "./controllers/health.controller";
 import "./controllers/auth.controller";
+import "./controllers/csrf.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
 
 const container = buildContainer();
+
+// Let the auth guard verify sessions against the DB (role + tokenVersion),
+// so a password reset invalidates outstanding sessions.
+const memberRepository = container.get<MemberRepository>(TYPES.MemberRepository);
+configureAuthLookup((id) => memberRepository.findAuthInfo(id));
 
 const server = new InversifyExpressServer(container);
 
@@ -29,9 +40,29 @@ server.setConfig((app) => {
   app.use(express.json());
   app.use(cookieParser());
 
+  // CSRF guard on all mutating requests (skips GET/HEAD/OPTIONS). Must come
+  // after cookieParser so req.cookies is populated.
+  app.use(requireCsrf);
+
   // Brute-force protection on auth (PRD 7.2): 5 attempts / 15 min.
   app.use(
     "/auth/login",
+    rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, standardHeaders: true }),
+  );
+
+  // Throttle verification re-sends to curb email abuse.
+  app.use(
+    "/auth/resend-verification",
+    rateLimit({ windowMs: 15 * 60 * 1000, limit: 3, standardHeaders: true }),
+  );
+
+  // Throttle password-reset requests (curb email abuse + enumeration probing).
+  app.use(
+    "/auth/forgot-password",
+    rateLimit({ windowMs: 15 * 60 * 1000, limit: 3, standardHeaders: true }),
+  );
+  app.use(
+    "/auth/reset-password",
     rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, standardHeaders: true }),
   );
 });
