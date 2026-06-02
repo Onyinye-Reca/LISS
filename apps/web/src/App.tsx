@@ -1,5 +1,7 @@
 import { Routes, Route } from "react-router-dom";
+import PublicLayout from "./components/PublicLayout";
 import HomePage from "./pages/HomePage";
+import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -11,8 +13,13 @@ import DashboardPage from "./pages/admin/DashboardPage";
 export default function App() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/" element={<HomePage />} />
+      {/* Public pages with shared header/footer */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Route>
+
+      {/* Auth pages use their own centered shell */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

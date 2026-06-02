@@ -55,6 +55,36 @@ export function verificationEmail(verifyUrl: string): EmailContent {
   };
 }
 
+/** Escapes user-supplied text before embedding it in HTML email bodies. */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export function contactNotificationEmail(submission: {
+  name: string;
+  email: string;
+  message: string;
+}): EmailContent {
+  const name = escapeHtml(submission.name);
+  const email = escapeHtml(submission.email);
+  const message = escapeHtml(submission.message).replace(/\n/g, "<br/>");
+  return {
+    subject: `New contact message from ${submission.name}`,
+    html: layout(
+      "New contact message",
+      `<strong>${name}</strong> &lt;${email}&gt; wrote:<br/><br/>${message}`,
+      `Reply to ${name}`,
+      `mailto:${submission.email}`,
+    ),
+    text: `New contact message from ${submission.name} <${submission.email}>:\n\n${submission.message}`,
+  };
+}
+
 export function passwordResetEmail(resetUrl: string): EmailContent {
   return {
     subject: "Reset your LISS11' Alumni password",
