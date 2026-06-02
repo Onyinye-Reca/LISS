@@ -126,6 +126,18 @@ model Vote {
   @@map("votes")
 }
 
+// Contact-form submissions. Stored so nothing is lost if the email
+// notification fails; an admin inbox view can read these later.
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}
+
 enum PaymentType {
   DUES
   DONATION

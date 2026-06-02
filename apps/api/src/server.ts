@@ -16,6 +16,7 @@ import { requireCsrf } from "./middleware/csrf";
 import "./controllers/health.controller";
 import "./controllers/auth.controller";
 import "./controllers/csrf.controller";
+import "./controllers/contact.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
@@ -63,6 +64,12 @@ server.setConfig((app) => {
   );
   app.use(
     "/auth/reset-password",
+    rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, standardHeaders: true }),
+  );
+
+  // Throttle contact submissions to curb spam.
+  app.use(
+    "/contact",
     rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, standardHeaders: true }),
   );
 });

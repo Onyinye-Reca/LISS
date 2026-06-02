@@ -1,10 +1,18 @@
 import { injectable } from "inversify";
 
+export interface ContactSubmission {
+  name: string;
+  email: string;
+  message: string;
+}
+
 export interface EmailService {
   /** Sends the verification email. `verifyUrl` is the fully-composed link. */
   sendVerification(to: string, verifyUrl: string): Promise<void>;
   /** Sends the password-reset email. `resetUrl` is the fully-composed link. */
   sendPasswordReset(to: string, resetUrl: string): Promise<void>;
+  /** Notifies the site inbox of a new contact-form submission. */
+  sendContactNotification(to: string, submission: ContactSubmission): Promise<void>;
 }
 
 /**
@@ -22,5 +30,15 @@ export class ConsoleEmailService implements EmailService {
   async sendPasswordReset(to: string, resetUrl: string): Promise<void> {
     // eslint-disable-next-line no-console
     console.log(`[email] reset ${to} -> ${resetUrl}`);
+  }
+
+  async sendContactNotification(
+    to: string,
+    submission: ContactSubmission,
+  ): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[email] contact -> ${to} from ${submission.name} <${submission.email}>: ${submission.message}`,
+    );
   }
 }
