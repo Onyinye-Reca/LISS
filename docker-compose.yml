@@ -7,8 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: liss11
+    # Host port 5544 avoids clashing with a local Postgres.app on 5432.
+    # Bound to 127.0.0.1 explicitly so it doesn't depend on localhost's
+    # IPv4/IPv6 resolution order.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5544:5432"
     volumes:
       - liss11_pgdata:/var/lib/postgresql/data
 

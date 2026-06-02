@@ -66,18 +66,26 @@ and talking across origins — Sprint 0 is done.
 
 ## Smoke-test auth
 
+Mutating routes require a CSRF token (double-submit cookie). The web app's
+`apiFetch` helper handles this automatically; with curl, fetch a token first and
+reuse one cookie jar. The browser/`apiFetch` flow does not need these manual
+steps — they're only for raw curl testing.
+
 ```bash
+# get a CSRF token + cookie (jar shared across the calls below)
+TOKEN=$(curl -s -c cookies.txt http://localhost:4000/csrf | sed 's/.*"csrfToken":"\([^"]*\)".*/\1/')
+
 # register
-curl -i -X POST http://localhost:4000/auth/register \
-  -H 'Content-Type: application/json' \
+curl -i -b cookies.txt -X POST http://localhost:4000/auth/register \
+  -H 'Content-Type: application/json' -H "X-CSRF-Token: $TOKEN" \
   -d '{"fullName":"Test User","email":"test@example.com","password":"password123"}'
 
-# login (stores the cookie)
-curl -i -c cookies.txt -X POST http://localhost:4000/auth/login \
-  -H 'Content-Type: application/json' \
+# verify via the link printed in the API console, then log in
+curl -i -b cookies.txt -c cookies.txt -X POST http://localhost:4000/auth/login \
+  -H 'Content-Type: application/json' -H "X-CSRF-Token: $TOKEN" \
   -d '{"email":"test@example.com","password":"password123"}'
 
-# authenticated route
+# authenticated route (GET — no CSRF header needed)
 curl -i -b cookies.txt http://localhost:4000/auth/me
 ```
 
@@ -89,5 +97,9 @@ curl -i -b cookies.txt http://localhost:4000/auth/me
 - `apps/api/src/repositories/member.repository.ts` imports types from
   `@prisma/client`, which only exist after `prisma generate` (step 4). A red
   squiggle there before that step is expected.
-- Email is stubbed (`ConsoleEmailService` logs the token). Swap the container
-  binding for a Resend implementation in Sprint 1.
+- Email links are logged by `ConsoleEmailService` when `RESEND_API_KEY` is
+  blank. For temporary Resend testing, set `RESEND_API_KEY` and keep
+  `EMAIL_FROM="LISS11' Alumni <onboarding@resend.dev>"`; Resend only allows
+  that sender to email the Resend account's own address. For production, replace
+  `EMAIL_FROM` with a sender on a verified domain, such as
+  `LISS11' Alumni <no-reply@liss11alumni.org>`.

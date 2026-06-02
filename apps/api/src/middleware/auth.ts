@@ -6,8 +6,27 @@ export interface AuthedRequest extends Request {
   auth?: { memberId: string; role: Role };
 }
 
+/**
+ * Looks up a member's current role + tokenVersion. Wired from the DI
+ * container at startup (see server.ts). When set, the auth guard enforces
+ * tokenVersion, so a password reset invalidates outstanding sessions.
+ */
+export type AuthLookup = (
+  memberId: string,
+) => Promise<{ role: string; tokenVersion: number } | null>;
+
+let authLookup: AuthLookup | null = null;
+
+export function configureAuthLookup(lookup: AuthLookup): void {
+  authLookup = lookup;
+}
+
 /** Verifies the JWT carried in the httpOnly cookie. Runs on every protected request (PRD 3.3). */
-export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
+export async function requireAuth(
+  req: AuthedRequest,
+  res: Response,
+  next: NextFunction,
+) {
   const token = req.cookies?.token;
   if (!token) return res.status(401).json({ error: "Not authenticated" });
 
@@ -15,8 +34,28 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
   if (!secret) return res.status(500).json({ error: "Server misconfigured" });
 
   try {
-    const payload = jwt.verify(token, secret) as { sub: string; role: Role };
-    req.auth = { memberId: payload.sub, role: payload.role };
+    const payload = jwt.verify(token, secret) as {
+      sub: string;
+      role: Role;
+      ver?: number;
+    };
+
+    // When the lookup is wired, confirm the session is still valid against the
+    // DB: the member must exist and the tokenVersion must match. This is the
+    // mechanism that logs out old sessions after a password reset.
+    if (authLookup) {
+      const current = await authLookup(payload.sub);
+      if (!current) {
+        return res.status(401).json({ error: "Session no longer valid" });
+      }
+      if (typeof payload.ver === "number" && payload.ver !== current.tokenVersion) {
+        return res.status(401).json({ error: "Session expired, please log in again" });
+      }
+      // Trust the DB for the role so it can't go stale in a long-lived token.
+      req.auth = { memberId: payload.sub, role: current.role as Role };
+    } else {
+      req.auth = { memberId: payload.sub, role: payload.role };
+    }
     next();
   } catch {
     return res.status(401).json({ error: "Invalid or expired session" });
