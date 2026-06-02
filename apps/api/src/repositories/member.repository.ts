@@ -25,4 +25,27 @@ export class MemberRepository {
   }): Promise<Member> {
     return this.prisma.member.create({ data });
   }
+
+  markVerified(id: string): Promise<Member> {
+    return this.prisma.member.update({
+      where: { id },
+      data: { verified: true },
+    });
+  }
+
+  /** Sets a new password hash and bumps tokenVersion to invalidate old sessions. */
+  setPassword(id: string, passwordHash: string): Promise<Member> {
+    return this.prisma.member.update({
+      where: { id },
+      data: { passwordHash, tokenVersion: { increment: 1 } },
+    });
+  }
+
+  /** Lightweight lookup for the auth middleware: current role + tokenVersion. */
+  findAuthInfo(id: string): Promise<{ role: string; tokenVersion: number } | null> {
+    return this.prisma.member.findUnique({
+      where: { id },
+      select: { role: true, tokenVersion: true },
+    });
+  }
 }
