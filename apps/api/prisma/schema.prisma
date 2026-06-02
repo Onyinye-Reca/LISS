@@ -1,0 +1,117 @@
+// Prisma schema for the LISS11' alumni site.
+// Core tables only — enough to prove the migration workflow in Sprint 0.
+// The votes table's INSERT-only rule is enforced by a DB trigger in
+// votes_immutability.sql (Prisma cannot express triggers/RLS).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MEMBER
+  EDITOR
+  ELECTORAL_COMMITTEE
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Member {
+  id           String    @id @default(uuid())
+  fullName     String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(MEMBER)
+  verified     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  votes        Vote[]
+  payments     Payment[]
+
+  @@map("members")
+}
+
+model Election {
+  id        String     @id @default(uuid())
+  title     String
+  isOpen    Boolean    @default(false)
+  opensAt   DateTime?
+  closesAt  DateTime?
+  createdAt DateTime   @default(now())
+
+  positions Position[]
+  votes     Vote[]
+
+  @@map("elections")
+}
+
+model Position {
+  id         String      @id @default(uuid())
+  title      String
+  election   Election    @relation(fields: [electionId], references: [id])
+  electionId String
+
+  candidates Candidate[]
+  votes      Vote[]
+
+  @@map("positions")
+}
+
+model Candidate {
+  id         String   @id @default(uuid())
+  name       String
+  manifesto  String?
+  position   Position @relation(fields: [positionId], references: [id])
+  positionId String
+
+  votes      Vote[]
+
+  @@map("candidates")
+}
+
+// INSERT-only. A DB trigger blocks UPDATE/DELETE (see votes_immutability.sql).
+// One vote per member per position is enforced by the unique constraint.
+model Vote {
+  id          String    @id @default(uuid())
+  member      Member    @relation(fields: [memberId], references: [id])
+  memberId    String
+  election    Election  @relation(fields: [electionId], references: [id])
+  electionId  String
+  position    Position  @relation(fields: [positionId], references: [id])
+  positionId  String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidateId String
+  castAt      DateTime  @default(now())
+
+  @@unique([memberId, positionId])
+  @@map("votes")
+}
+
+enum PaymentType {
+  DUES
+  DONATION
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  member    Member        @relation(fields: [memberId], references: [id])
+  memberId  String
+  type      PaymentType
+  amount    Int // kobo (smallest currency unit), per Paystack convention
+  reference String        @unique
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  @@map("payments")
+}

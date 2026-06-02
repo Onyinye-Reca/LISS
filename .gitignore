@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+
+# Prisma generated client
+apps/api/node_modules/.prisma/
+apps/api/src/generated/
+
+# Vite
+apps/web/dist/

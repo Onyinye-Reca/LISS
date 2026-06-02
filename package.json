@@ -1,0 +1,19 @@
+{
+  "name": "liss11",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build --workspace @liss11/shared",
+    "dev:api": "npm run dev --workspace @liss11/api",
+    "dev:web": "npm run dev --workspace @liss11/web",
+    "build": "npm run build:shared && npm run build --workspace @liss11/api && npm run build --workspace @liss11/web",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}
