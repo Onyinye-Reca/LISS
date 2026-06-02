@@ -5,6 +5,7 @@ import { ContactSchema } from "@liss11/shared";
 import { TYPES } from "../types";
 import { ContactService } from "../services/contact.service";
 import { validateBody } from "../middleware/validate";
+import { captureError } from "../instrument";
 
 @controller("/contact")
 export class ContactController {
@@ -16,8 +17,7 @@ export class ContactController {
       await this.contact.submit(req.body);
       res.json({ ok: true, message: "Thanks for reaching out — we'll be in touch." });
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      captureError(err);
       res.status(500).json({ error: "Could not send your message" });
     }
   }

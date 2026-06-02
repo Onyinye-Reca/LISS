@@ -12,6 +12,7 @@ import { TYPES } from "../types";
 import { AuthService, AuthError } from "../services/auth.service";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
+import { captureError } from "../instrument";
 
 @controller("/auth")
 export class AuthController {
@@ -112,8 +113,7 @@ export class AuthController {
     if (err instanceof AuthError) {
       return res.status(err.status).json({ error: err.message });
     }
-    // eslint-disable-next-line no-console
-    console.error(err);
+    captureError(err);
     res.status(500).json({ error: "Internal error" });
   }
 }

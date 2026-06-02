@@ -1,4 +1,5 @@
-import "reflect-metadata"; // MUST be first — Inversify decorators depend on it
+import "./instrument"; // MUST be first — Sentry instrumentation before Express
+import "reflect-metadata"; // Inversify decorators depend on this
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -9,6 +10,7 @@ import { buildContainer } from "./inversify.config";
 import { TYPES } from "./types";
 import { MemberRepository } from "./repositories/member.repository";
 import { configureAuthLookup } from "./middleware/auth";
+import { attachSentryErrorHandler } from "./instrument";
 
 import { requireCsrf } from "./middleware/csrf";
 
@@ -75,6 +77,9 @@ server.setConfig((app) => {
 });
 
 const app = server.build();
+
+// Must come after routes are registered: catches uncaught route errors.
+attachSentryErrorHandler(app);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

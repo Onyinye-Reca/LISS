@@ -3,6 +3,7 @@ import { ContactInput } from "@liss11/shared";
 import { TYPES } from "../types";
 import { ContactMessageRepository } from "../repositories/contact-message.repository";
 import type { EmailService } from "./email.service";
+import { captureError } from "../instrument";
 
 @injectable()
 export class ContactService {
@@ -24,8 +25,8 @@ export class ContactService {
       try {
         await this.email.sendContactNotification(to, input);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("[contact] notification email failed:", err);
+        // Soft failure — the message is already stored. Report so ops sees it.
+        captureError(err);
       }
     }
   }
