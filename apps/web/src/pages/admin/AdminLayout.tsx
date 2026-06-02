@@ -1,0 +1,65 @@
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+
+const navItems = [{ to: "/admin", label: "Dashboard", end: true }];
+
+export default function AdminLayout() {
+  const { member, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const onLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
+
+  return (
+    <div className="min-h-screen bg-cream font-sans text-ink md:flex">
+      {/* Sidebar */}
+      <aside className="bg-maroon text-white md:w-60 md:min-h-screen">
+        <div className="px-5 py-4 text-lg font-bold">LISS11' Admin</div>
+        <nav className="px-3 pb-4">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-sm font-medium ${
+                  isActive ? "bg-white/15 text-white" : "text-white/80 hover:bg-white/10"
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main column */}
+      <div className="flex-1">
+        <header className="flex items-center justify-between border-b border-gold/20 bg-white px-6 py-3">
+          <Link to="/" className="text-sm text-ink/60 hover:text-maroon">
+            ← Back to site
+          </Link>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="text-ink/70">
+              {member?.fullName}{" "}
+              <span className="rounded bg-gold/20 px-2 py-0.5 text-xs font-semibold text-maroon">
+                {member?.role}
+              </span>
+            </span>
+            <button
+              onClick={() => void onLogout()}
+              className="font-semibold text-maroon underline"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main className="p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}

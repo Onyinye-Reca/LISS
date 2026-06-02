@@ -1,0 +1,91 @@
+import { FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
+import { register } from "../lib/auth-api";
+import { AuthShell, TextField, Button, Alert } from "../components/ui";
+
+export default function RegisterPage() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      await register(fullName, email, password);
+      setDone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <AuthShell
+        title="Check your email"
+        footer={
+          <Link to="/login" className="font-semibold text-maroon underline">
+            Back to login
+          </Link>
+        }
+      >
+        <Alert kind="success">
+          We've sent a verification link to <strong>{email}</strong>. Click it to
+          activate your account, then log in.
+        </Alert>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Create your account"
+      subtitle="Join the LISS11' Alumni network"
+      footer={
+        <>
+          Already a member?{" "}
+          <Link to="/login" className="font-semibold text-maroon underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        {error && <Alert>{error}</Alert>}
+        <TextField
+          label="Full name"
+          autoComplete="name"
+          required
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
+        <TextField
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          label="Password"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Button type="submit" disabled={busy}>
+          {busy ? "Creating account…" : "Create account"}
+        </Button>
+      </form>
+    </AuthShell>
+  );
+}
