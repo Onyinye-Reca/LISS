@@ -1,6 +1,7 @@
-import "./instrument"; // MUST be first — Sentry instrumentation before Express
+import "./instrument"; // MUST be first. Sentry instrumentation before Express
 import "reflect-metadata"; // Inversify decorators depend on this
 import express from "express";
+import { join } from "path";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -19,6 +20,10 @@ import "./controllers/health.controller";
 import "./controllers/auth.controller";
 import "./controllers/csrf.controller";
 import "./controllers/contact.controller";
+import "./controllers/upload.controller";
+import "./controllers/officer.controller";
+import "./controllers/bot-member.controller";
+import "./controllers/region.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
@@ -42,6 +47,9 @@ server.setConfig((app) => {
   );
   app.use(express.json());
   app.use(cookieParser());
+
+  // Serve locally-stored uploads (no-op when Cloudinary is used). GET only.
+  app.use("/uploads", express.static(join(process.cwd(), "uploads")));
 
   // CSRF guard on all mutating requests (skips GET/HEAD/OPTIONS). Must come
   // after cookieParser so req.cookies is populated.

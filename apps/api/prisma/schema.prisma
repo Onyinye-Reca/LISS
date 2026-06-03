@@ -1,5 +1,5 @@
 // Prisma schema for the LISS11' alumni site.
-// Core tables only — enough to prove the migration workflow in Sprint 0.
+// Core tables only. Enough to prove the migration workflow in Sprint 0.
 // The votes table's INSERT-only rule is enforced by a DB trigger in
 // votes_immutability.sql (Prisma cannot express triggers/RLS).
 
@@ -160,4 +160,72 @@ model Payment {
   createdAt DateTime      @default(now())
 
   @@map("payments")
+}
+
+// --- Sprint 3: EXCOS / BOT / Regions content (PRD 4.3-4.5) ---
+
+enum OfficerTier {
+  PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  PRO
+  TREASURER
+  OTHER
+}
+
+// Executive committee officer (PRD 4.3).
+model Officer {
+  id        String      @id @default(uuid())
+  fullName  String
+  title     String // displayed role, e.g. "Financial Secretary"
+  tier      OfficerTier @default(OTHER) // for grouping/ordering
+  email     String
+  whatsapp  String?
+  termStart Int? // year, e.g. 2024
+  termEnd   Int? // year, e.g. 2026
+  photoUrl  String?
+  isPast    Boolean     @default(false) // past executives section
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("officers")
+}
+
+// Board of Trustees member (PRD 4.4).
+model BotMember {
+  id          String   @id @default(uuid())
+  fullName    String
+  designation String
+  bio         String?
+  email       String?
+  photoUrl    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bot_members")
+}
+
+enum RegionKey {
+  SOUTH_SOUTH
+  SOUTH_EAST
+  SOUTH_WEST
+  NORTH
+  DIASPORA
+}
+
+// One of the five fixed regions (PRD 4.5). Seeded; edited, not created/deleted.
+model Region {
+  id          String    @id @default(uuid())
+  key         RegionKey @unique
+  name        String
+  description String?
+  repName     String?
+  repEmail    String?
+  repWhatsapp String?
+  memberCount Int       @default(0)
+  updatedAt   DateTime  @updatedAt
+
+  @@map("regions")
 }

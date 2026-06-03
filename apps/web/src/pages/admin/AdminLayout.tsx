@@ -1,7 +1,12 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 
-const navItems = [{ to: "/admin", label: "Dashboard", end: true }];
+const navItems = [
+  { to: "/admin", label: "Dashboard", end: true },
+  { to: "/admin/excos", label: "EXCOS", end: false },
+  { to: "/admin/bot", label: "Board of Trustees", end: false },
+  { to: "/admin/regions", label: "Regions", end: false },
+];
 
 export default function AdminLayout() {
   const { member, logout } = useAuth();
