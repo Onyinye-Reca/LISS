@@ -12,19 +12,19 @@ liss11/
 
 ## Stack
 
-- **API** — Express, InversifyJS (DI), Prisma, JWT in an httpOnly cookie,
+- **API** - Express, InversifyJS (DI), Prisma, JWT in an httpOnly cookie,
   bcrypt (cost 12), Zod validation, helmet, CORS locked to the web origin,
   login rate limiting. Layered controller → service → repository.
-- **Web** — Vite + React + TypeScript + Tailwind, PRD brand tokens
+- **Web** - Vite + React + TypeScript + Tailwind, PRD brand tokens
   (Maroon `#76301F`, Gold `#C08D33`, Inter, 8px grid).
-- **DB** — Postgres. Core tables: members, elections, positions, candidates,
+- **DB** - Postgres. Core tables: members, elections, positions, candidates,
   the INSERT-only votes table, payments. The votes table's immutability is
   enforced by a DB trigger (`apps/api/prisma/votes_immutability.sql`).
 
 ## Prerequisites
 
 - Node 18.18+ (CI uses Node 20)
-- Postgres — either Docker (`docker compose up -d`) or a local install
+- Postgres - either Docker (`docker compose up -d`) or a local install
 
 ## Setup
 
@@ -62,14 +62,14 @@ npm run dev:web    # http://localhost:5173
 ```
 
 Open http://localhost:5173. A **green status dot** means both apps are running
-and talking across origins — Sprint 0 is done.
+and talking across origins. Sprint 0 is done.
 
 ## Smoke-test auth
 
 Mutating routes require a CSRF token (double-submit cookie). The web app's
 `apiFetch` helper handles this automatically; with curl, fetch a token first and
 reuse one cookie jar. The browser/`apiFetch` flow does not need these manual
-steps — they're only for raw curl testing.
+steps. They're only for raw curl testing.
 
 ```bash
 # get a CSRF token + cookie (jar shared across the calls below)
@@ -85,7 +85,7 @@ curl -i -b cookies.txt -c cookies.txt -X POST http://localhost:4000/auth/login \
   -H 'Content-Type: application/json' -H "X-CSRF-Token: $TOKEN" \
   -d '{"email":"test@example.com","password":"password123"}'
 
-# authenticated route (GET — no CSRF header needed)
+# authenticated route (GET - no CSRF header needed)
 curl -i -b cookies.txt http://localhost:4000/auth/me
 ```
 

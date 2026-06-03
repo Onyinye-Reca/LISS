@@ -15,7 +15,7 @@ export class ContactController {
   async submit(req: Request, res: Response) {
     try {
       await this.contact.submit(req.body);
-      res.json({ ok: true, message: "Thanks for reaching out — we'll be in touch." });
+      res.json({ ok: true, message: "Thanks for reaching out. We'll be in touch." });
     } catch (err) {
       captureError(err);
       res.status(500).json({ error: "Could not send your message" });

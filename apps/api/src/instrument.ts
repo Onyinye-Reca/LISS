@@ -19,7 +19,7 @@ if (sentryEnabled) {
   console.log("[sentry] error monitoring enabled");
 } else {
   // eslint-disable-next-line no-console
-  console.log("[sentry] SENTRY_DSN not set — error monitoring disabled");
+  console.log("[sentry] SENTRY_DSN not set - error monitoring disabled");
 }
 
 /** Logs an error and reports it to Sentry when enabled. Use in catch blocks. */

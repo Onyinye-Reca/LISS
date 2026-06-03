@@ -1,5 +1,5 @@
 // Prisma schema for the LISS11' alumni site.
-// Core tables only — enough to prove the migration workflow in Sprint 0.
+// Core tables only. Enough to prove the migration workflow in Sprint 0.
 // The votes table's INSERT-only rule is enforced by a DB trigger in
 // votes_immutability.sql (Prisma cannot express triggers/RLS).
 

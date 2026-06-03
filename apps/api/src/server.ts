@@ -1,4 +1,4 @@
-import "./instrument"; // MUST be first — Sentry instrumentation before Express
+import "./instrument"; // MUST be first. Sentry instrumentation before Express
 import "reflect-metadata"; // Inversify decorators depend on this
 import express from "express";
 import helmet from "helmet";

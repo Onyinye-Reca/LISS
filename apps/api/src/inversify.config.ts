@@ -13,7 +13,7 @@ import { ResendEmailService } from "./services/resend-email.service";
 export function buildContainer(): Container {
   const container = new Container();
 
-  // One shared PrismaClient for the whole app — never a new pool per resolution.
+  // One shared PrismaClient for the whole app. Never a new pool per resolution.
   container.bind(TYPES.PrismaClient).toConstantValue(new PrismaClient());
 
   container.bind(TYPES.MemberRepository).to(MemberRepository);
@@ -38,7 +38,7 @@ export function buildContainer(): Container {
   } else {
     container.bind(TYPES.EmailService).to(ConsoleEmailService);
     // eslint-disable-next-line no-console
-    console.log("[email] RESEND_API_KEY not set — logging links to console");
+    console.log("[email] RESEND_API_KEY not set - logging links to console");
   }
 
   return container;
