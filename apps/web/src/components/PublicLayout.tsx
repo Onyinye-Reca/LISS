@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ADMIN_PANEL_ROLES, Role } from "@liss11/shared";
 import { useAuth } from "../auth/AuthContext";
+import UserMenu from "./UserMenu";
 
 // Public site nav, following the PRD site map (section 2).
 const navLinks = [
@@ -66,35 +67,28 @@ export default function PublicLayout() {
             LISS11' Alumni
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-5 md:flex">
-            {navLinks.map((l) => (
-              <NavLink key={l.to} to={l.to} end={l.end} className={linkClass}>
-                {l.label}
-              </NavLink>
-            ))}
-            {member ? (
-              <span className="flex items-center gap-4">
-                {isAdmin && (
-                  <Link to="/admin" className="text-sm font-medium text-maroon">
-                    Admin
-                  </Link>
-                )}
-                <button
-                  onClick={() => void logout()}
-                  className="text-sm font-medium text-ink/70 hover:text-gold"
+          {/* Desktop nav: links sit between the logo and the account avatar,
+              which is pushed to the far right end of the bar. */}
+          <nav className="hidden flex-1 items-center md:flex">
+            <div className="mx-auto flex items-center gap-5">
+              {navLinks.map((l) => (
+                <NavLink key={l.to} to={l.to} end={l.end} className={linkClass}>
+                  {l.label}
+                </NavLink>
+              ))}
+            </div>
+            <div className="ml-4 shrink-0">
+              {member ? (
+                <UserMenu />
+              ) : (
+                <Link
+                  to="/login"
+                  className="rounded-lg bg-maroon px-3 py-1.5 text-sm font-semibold text-white hover:bg-maroon-dark"
                 >
-                  Log out
-                </button>
-              </span>
-            ) : (
-              <Link
-                to="/login"
-                className="rounded-lg bg-maroon px-3 py-1.5 text-sm font-semibold text-white hover:bg-maroon-dark"
-              >
-                Log in
-              </Link>
-            )}
+                  Log in
+                </Link>
+              )}
+            </div>
           </nav>
 
           {/* Mobile hamburger (PRD 7.4: collapses below 768px) */}
@@ -138,6 +132,10 @@ export default function PublicLayout() {
               <li className="mt-2 border-t border-gold/20 pt-3">
                 {member ? (
                   <div className="flex flex-col gap-1">
+                    <span className="px-2 py-1 text-sm text-ink/60">
+                      Signed in as{" "}
+                      <span className="font-semibold text-maroon">{member.fullName}</span>
+                    </span>
                     {isAdmin && (
                       <Link to="/admin" onClick={closeMenu} className="px-2 py-3 font-medium text-maroon">
                         Admin

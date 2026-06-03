@@ -14,7 +14,7 @@ const HERO_POSTER = "https://res.cloudinary.com/demo/image/upload/sample.jpg";
 const whyJoin: AccordionItem[] = [
   {
     title: "Alumni Events",
-    body: "Hangouts, weddings, AGMs and game nights. Stay in the loop and never miss a reunion with the set.",
+    body: "Hangouts, weddings, Annual General Meetings and game nights. Stay in the loop and never miss a reunion with the set.",
   },
   {
     title: "Jobs & Internship",
@@ -183,7 +183,7 @@ export default function HomePage() {
           <EmptyState
             icon="📅"
             heading="No upcoming events"
-            description="Hangouts, AGMs and game nights will be listed here as they're scheduled."
+            description="Hangouts, Annual General Meetings and game nights will be listed here as they're scheduled."
             ctaLabel="See events"
             ctaTo="/events"
           />
