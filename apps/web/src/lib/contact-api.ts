@@ -13,5 +13,5 @@ export async function submitContact(input: ContactInput): Promise<string> {
   if (!res.ok) {
     throw new Error(data.error ?? "Could not send your message");
   }
-  return data.message ?? "Thanks for reaching out — we'll be in touch.";
+  return data.message ?? "Thanks for reaching out. We'll be in touch.";
 }

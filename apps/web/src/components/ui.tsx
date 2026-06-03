@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 /** Centered card layout for the public auth pages. */
 export function AuthShell({
@@ -64,11 +65,43 @@ export function Alert({
 }) {
   const styles =
     kind === "error"
-      ? "border-red-200 bg-red-50 text-red-800"
-      : "border-green-200 bg-green-50 text-green-800";
+      ? "border-danger/30 bg-danger/5 text-danger"
+      : "border-success/30 bg-success/5 text-success";
   return (
     <div className={`rounded-lg border px-3 py-2 text-sm ${styles}`} role="alert">
       {children}
+    </div>
+  );
+}
+
+/**
+ * Empty-state block (PRD 9.3): icon, heading, description, CTA. Used for the
+ * homepage preview sections whose data arrives in later sprints.
+ */
+export function EmptyState({
+  icon,
+  heading,
+  description,
+  ctaLabel,
+  ctaTo,
+}: {
+  icon?: ReactNode;
+  heading: string;
+  description: string;
+  ctaLabel: string;
+  ctaTo: string;
+}) {
+  return (
+    <div className="flex flex-col items-center rounded-xl border border-dashed border-gold/40 bg-card/50 px-6 py-12 text-center">
+      {icon && <div className="mb-3 text-3xl text-gold" aria-hidden="true">{icon}</div>}
+      <h3 className="text-lg font-semibold text-maroon">{heading}</h3>
+      <p className="mt-1 max-w-sm text-sm text-ink/70">{description}</p>
+      <Link
+        to={ctaTo}
+        className="mt-5 rounded-lg bg-maroon px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-dark"
+      >
+        {ctaLabel}
+      </Link>
     </div>
   );
 }

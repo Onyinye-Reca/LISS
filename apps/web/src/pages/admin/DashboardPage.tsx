@@ -8,7 +8,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-maroon">Dashboard</h1>
         <p className="mt-1 text-sm text-ink/60">
-          Welcome, {member?.fullName}. This is the protected admin shell — feature
+          Welcome, {member?.fullName}. This is the protected admin shell. Feature
           modules will be added here in later sprints.
         </p>
       </div>

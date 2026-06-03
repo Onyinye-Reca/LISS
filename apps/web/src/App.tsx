@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import PublicLayout from "./components/PublicLayout";
 import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
+import ComingSoonPage from "./pages/ComingSoonPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -17,6 +18,8 @@ export default function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<ContactPage />} />
+        {/* Public pages not yet built fall back to a placeholder (Sprint 3+). */}
+        <Route path="*" element={<ComingSoonPage />} />
       </Route>
 
       {/* Auth pages use their own centered shell */}
@@ -25,7 +28,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* Admin route group — server re-checks role on every request */}
+      {/* Admin route group. Server re-checks role on every request */}
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />

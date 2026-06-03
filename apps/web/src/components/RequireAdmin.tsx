@@ -3,7 +3,7 @@ import { ADMIN_PANEL_ROLES, Role } from "@liss11/shared";
 import { useAuth } from "../auth/AuthContext";
 
 /**
- * Client-side gate for the admin route group. This is UX only — the server
+ * Client-side gate for the admin route group. This is UX only. The server
  * re-checks role on every request (PRD 4.14); never trust this alone.
  */
 export default function RequireAdmin() {
