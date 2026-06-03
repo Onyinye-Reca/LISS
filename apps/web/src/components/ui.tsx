@@ -1,5 +1,14 @@
-import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+  ReactNode,
+} from "react";
 import { Link } from "react-router-dom";
+
+const fieldClass =
+  "w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/30";
 
 /** Centered card layout for the public auth pages. */
 export function AuthShell({
@@ -34,10 +43,34 @@ export function TextField({
   return (
     <label className="block">
       <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
-      <input
-        {...props}
-        className="w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/30"
-      />
+      <input {...props} className={fieldClass} />
+    </label>
+  );
+}
+
+export function SelectField({
+  label,
+  children,
+  ...props
+}: { label: string } & SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
+      <select {...props} className={fieldClass}>
+        {children}
+      </select>
+    </label>
+  );
+}
+
+export function TextArea({
+  label,
+  ...props
+}: { label: string } & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
+      <textarea {...props} className={fieldClass} />
     </label>
   );
 }

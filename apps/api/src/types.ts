@@ -5,7 +5,11 @@ export const TYPES = {
   VerificationTokenRepository: Symbol.for("VerificationTokenRepository"),
   PasswordResetTokenRepository: Symbol.for("PasswordResetTokenRepository"),
   ContactMessageRepository: Symbol.for("ContactMessageRepository"),
+  OfficerRepository: Symbol.for("OfficerRepository"),
+  BotMemberRepository: Symbol.for("BotMemberRepository"),
+  RegionRepository: Symbol.for("RegionRepository"),
   AuthService: Symbol.for("AuthService"),
   ContactService: Symbol.for("ContactService"),
   EmailService: Symbol.for("EmailService"),
+  StorageService: Symbol.for("StorageService"),
 } as const;

@@ -17,3 +17,9 @@ export const ADMIN_PANEL_ROLES: Role[] = [
   Role.ADMIN,
   Role.SUPER_ADMIN,
 ];
+
+/**
+ * Roles allowed to manage site content (EXCOS/BOT/Regions/etc.).
+ * Excludes ELECTORAL_COMMITTEE, who are scoped to elections only (PRD 4.11).
+ */
+export const CONTENT_ROLES: Role[] = [Role.EDITOR, Role.ADMIN, Role.SUPER_ADMIN];
