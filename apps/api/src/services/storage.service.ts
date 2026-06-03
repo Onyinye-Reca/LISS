@@ -1,5 +1,4 @@
 import { injectable } from "inversify";
-import { v2 as cloudinary } from "cloudinary";
 import { randomUUID } from "crypto";
 import { writeFile, mkdir } from "fs/promises";
 import { join, extname } from "path";
@@ -19,6 +18,12 @@ export interface StorageService {
 @injectable()
 export class CloudinaryStorageService implements StorageService {
   uploadImage(file: UploadedFile, folder: string): Promise<string> {
+    // Lazy-require so the SDK parses CLOUDINARY_URL on first upload (inside the
+    // controller's try/catch) rather than at import time. A malformed URL then
+    // fails the upload with a clear error instead of crashing the whole app.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { v2: cloudinary } = require("cloudinary") as typeof import("cloudinary");
+
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: `liss11/${folder}`, resource_type: "image" },
