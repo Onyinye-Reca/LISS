@@ -8,6 +8,8 @@ import { ContactMessageRepository } from "./repositories/contact-message.reposit
 import { OfficerRepository } from "./repositories/officer.repository";
 import { BotMemberRepository } from "./repositories/bot-member.repository";
 import { RegionRepository } from "./repositories/region.repository";
+import { AnnouncementRepository } from "./repositories/announcement.repository";
+import { AlbumRepository } from "./repositories/album.repository";
 import { AuthService } from "./services/auth.service";
 import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
@@ -36,6 +38,8 @@ export function buildContainer(): Container {
   container.bind(TYPES.OfficerRepository).to(OfficerRepository);
   container.bind(TYPES.BotMemberRepository).to(BotMemberRepository);
   container.bind(TYPES.RegionRepository).to(RegionRepository);
+  container.bind(TYPES.AnnouncementRepository).to(AnnouncementRepository);
+  container.bind(TYPES.AlbumRepository).to(AlbumRepository);
   container.bind(TYPES.AuthService).to(AuthService);
   container.bind(TYPES.ContactService).to(ContactService);
 

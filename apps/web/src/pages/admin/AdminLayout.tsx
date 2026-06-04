@@ -6,6 +6,8 @@ const navItems = [
   { to: "/admin/excos", label: "EXCOS", end: false },
   { to: "/admin/bot", label: "Board of Trustees", end: false },
   { to: "/admin/regions", label: "Regions", end: false },
+  { to: "/admin/announcements", label: "Announcements", end: false },
+  { to: "/admin/gallery", label: "Gallery", end: false },
 ];
 
 export default function AdminLayout() {

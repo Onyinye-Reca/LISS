@@ -14,6 +14,15 @@ const nullableUrl = z.preprocess(
   (v) => (v === "" ? null : v),
   z.string().url().nullable().optional(),
 );
+// Accepts an ISO/date string from a form; "" clears it. Validated as a real date.
+const nullableDate = z.preprocess(
+  (v) => (v === "" ? null : v),
+  z
+    .string()
+    .refine((s) => !Number.isNaN(Date.parse(s)), "Invalid date")
+    .nullable()
+    .optional(),
+);
 
 // --- EXCOS / Officers (PRD 4.3) ---
 export const OFFICER_TIERS = [
@@ -116,4 +125,61 @@ export interface RegionView {
   repEmail: string | null;
   repWhatsapp: string | null;
   memberCount: number;
+}
+
+// --- Announcements (PRD 4.6 / "Better Update") ---
+export const AnnouncementCreateSchema = z.object({
+  title: z.string().min(2).max(200),
+  body: z.string().min(1).max(20000),
+  coverUrl: nullableUrl,
+  // Omit to default to now(); a date string lets admins backdate a post.
+  publishedAt: nullableDate,
+});
+export type AnnouncementCreateInput = z.infer<typeof AnnouncementCreateSchema>;
+export const AnnouncementUpdateSchema = AnnouncementCreateSchema.partial();
+export type AnnouncementUpdateInput = z.infer<typeof AnnouncementUpdateSchema>;
+
+export interface AnnouncementView {
+  id: string;
+  title: string;
+  body: string;
+  coverUrl: string | null;
+  publishedAt: string; // ISO string
+}
+
+// --- Gallery: albums + images (PRD 4.6) ---
+export const AlbumCreateSchema = z.object({
+  title: z.string().min(2).max(200),
+  description: nullableStr(2000),
+  coverUrl: nullableUrl,
+  eventDate: nullableDate,
+  sortOrder: z.number().int().optional().default(0),
+});
+export type AlbumCreateInput = z.infer<typeof AlbumCreateSchema>;
+export const AlbumUpdateSchema = AlbumCreateSchema.partial();
+export type AlbumUpdateInput = z.infer<typeof AlbumUpdateSchema>;
+
+export const GalleryImageCreateSchema = z.object({
+  url: z.string().url(),
+  caption: nullableStr(300),
+  sortOrder: z.number().int().optional().default(0),
+});
+export type GalleryImageCreateInput = z.infer<typeof GalleryImageCreateSchema>;
+
+export interface GalleryImageView {
+  id: string;
+  url: string;
+  caption: string | null;
+  sortOrder: number;
+}
+
+export interface AlbumView {
+  id: string;
+  title: string;
+  description: string | null;
+  coverUrl: string | null;
+  eventDate: string | null; // ISO string
+  sortOrder: number;
+  imageCount: number;
+  images: GalleryImageView[];
 }

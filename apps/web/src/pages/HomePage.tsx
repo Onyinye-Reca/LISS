@@ -1,7 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { AlbumView, AnnouncementView } from "@liss11/shared";
 import { Alert, EmptyState } from "../components/ui";
 import Accordion, { AccordionItem } from "../components/Accordion";
+import { getAlbums, getAnnouncements } from "../lib/content-api";
+import { formatDate } from "../lib/format";
+import { useAuth } from "../auth/AuthContext";
 
 // Hero media. Cloudinary-hosted placeholders (PRD picked Cloudinary). Swap
 // these public IDs for the real LISS11' hero once EXCOS supplies the video
@@ -31,10 +35,25 @@ const whyJoin: AccordionItem[] = [
 ];
 
 export default function HomePage() {
+  const { member } = useAuth();
   const [params] = useSearchParams();
   const verified = params.get("verified");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
+  const [albums, setAlbums] = useState<AlbumView[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementView[]>([]);
+
+  // Gallery is public, so its strip always loads. Announcements are members-
+  // only (gated route + API), so only fetch them for logged-in members.
+  // Failures fall back to the empty state, so swallow errors.
+  useEffect(() => {
+    getAlbums().then((a) => setAlbums(a.slice(0, 4))).catch(() => {});
+    if (member) {
+      getAnnouncements().then((a) => setAnnouncements(a.slice(0, 3))).catch(() => {});
+    } else {
+      setAnnouncements([]);
+    }
+  }, [member]);
 
   const toggleVideo = () => {
     const v = videoRef.current;
@@ -135,7 +154,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* If love were in pictures. Gallery strip (data arrives in Sprint 3) */}
+      {/* If love were in pictures. Gallery strip */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-4 py-16">
           <div className="mb-6 flex items-end justify-between">
@@ -144,17 +163,44 @@ export default function HomePage() {
               View gallery →
             </Link>
           </div>
-          <EmptyState
-            icon="🖼"
-            heading="Photos coming soon"
-            description="Moments from hangouts, weddings, and game nights will appear here once the gallery is live."
-            ctaLabel="Visit the gallery"
-            ctaTo="/gallery"
-          />
+          {albums.length === 0 ? (
+            <EmptyState
+              icon="🖼"
+              heading="Photos coming soon"
+              description="Moments from hangouts, weddings, and game nights will appear here once the gallery is live."
+              ctaLabel="Visit the gallery"
+              ctaTo="/gallery"
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {albums.map((a) => (
+                <Link
+                  key={a.id}
+                  to={`/gallery/${a.id}`}
+                  className="group overflow-hidden rounded-xl border border-gold/30 bg-card"
+                >
+                  <div className="aspect-square w-full overflow-hidden bg-ink/5">
+                    {a.coverUrl ? (
+                      <img
+                        src={a.coverUrl}
+                        alt={a.title}
+                        className="h-full w-full object-cover transition group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-3xl text-ink/30">🖼</div>
+                    )}
+                  </div>
+                  <p className="truncate px-3 py-2 text-sm font-medium text-maroon">{a.title}</p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Better Update. Announcements preview (Sprint 3) */}
+      {/* Better Update. Announcements preview (members-only) */}
+      {member && (
       <section className="mx-auto max-w-5xl px-4 py-16">
         <div className="mb-6 flex items-end justify-between">
           <h2 className="text-2xl font-bold text-maroon">Better Update</h2>
@@ -162,16 +208,40 @@ export default function HomePage() {
             View all →
           </Link>
         </div>
-        <EmptyState
-          icon="📣"
-          heading="No announcements yet"
-          description="The latest news and updates from the EXCOS will show up here."
-          ctaLabel="See announcements"
-          ctaTo="/announcements"
-        />
+        {announcements.length === 0 ? (
+          <EmptyState
+            icon="📣"
+            heading="No announcements yet"
+            description="The latest news and updates from the EXCOS will show up here."
+            ctaLabel="See announcements"
+            ctaTo="/announcements"
+          />
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-3">
+            {announcements.map((a) => (
+              <Link
+                key={a.id}
+                to={`/announcements/${a.id}`}
+                className="block overflow-hidden rounded-xl border border-gold/30 bg-card transition hover:border-gold hover:shadow-sm"
+              >
+                {a.coverUrl && (
+                  <img src={a.coverUrl} alt="" className="h-32 w-full object-cover" loading="lazy" />
+                )}
+                <div className="p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gold">
+                    {formatDate(a.publishedAt)}
+                  </p>
+                  <h3 className="mt-1 font-semibold text-maroon">{a.title}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
+      )}
 
-      {/* Upcoming Events preview (Sprint 3) */}
+      {/* Upcoming Events preview (members-only) */}
+      {member && (
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-4 py-16">
           <div className="mb-6 flex items-end justify-between">
@@ -189,6 +259,7 @@ export default function HomePage() {
           />
         </div>
       </section>
+      )}
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 const sections = [
   {
@@ -19,6 +20,8 @@ const sections = [
 ];
 
 export default function AboutPage() {
+  // The three sub-pages are members-only; flag that to logged-out visitors.
+  const { member } = useAuth();
   return (
     <main className="mx-auto max-w-5xl px-4 py-16">
       <header className="text-center">
@@ -39,7 +42,7 @@ export default function AboutPage() {
             <h2 className="text-lg font-semibold text-maroon">{s.title}</h2>
             <p className="mt-2 text-sm text-ink/70">{s.body}</p>
             <span className="mt-4 inline-block text-sm font-semibold text-maroon">
-              View →
+              {member ? "View →" : "🔒 Members only — log in to view"}
             </span>
           </Link>
         ))}

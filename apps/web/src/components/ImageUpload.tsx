@@ -7,14 +7,20 @@ export default function ImageUpload({
   folder,
   onChange,
   label = "Photo",
+  shape = "circle",
 }: {
   value: string | null;
   folder: string;
   onChange: (url: string | null) => void;
   label?: string;
+  shape?: "circle" | "rect";
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const previewClass =
+    shape === "circle"
+      ? "h-16 w-16 rounded-full"
+      : "h-16 w-28 rounded-lg";
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,9 +42,9 @@ export default function ImageUpload({
       <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
       <div className="flex items-center gap-4">
         {value ? (
-          <img src={value} alt="Preview" className="h-16 w-16 rounded-full object-cover" />
+          <img src={value} alt="Preview" className={`${previewClass} object-cover`} />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ink/10 text-xs text-ink/50">
+          <div className={`flex ${previewClass} items-center justify-center bg-ink/10 text-xs text-ink/50`}>
             None
           </div>
         )}

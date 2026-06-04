@@ -8,6 +8,8 @@ export const TYPES = {
   OfficerRepository: Symbol.for("OfficerRepository"),
   BotMemberRepository: Symbol.for("BotMemberRepository"),
   RegionRepository: Symbol.for("RegionRepository"),
+  AnnouncementRepository: Symbol.for("AnnouncementRepository"),
+  AlbumRepository: Symbol.for("AlbumRepository"),
   AuthService: Symbol.for("AuthService"),
   ContactService: Symbol.for("ContactService"),
   EmailService: Symbol.for("EmailService"),

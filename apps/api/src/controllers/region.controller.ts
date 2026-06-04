@@ -32,7 +32,8 @@ function toView(r: Region): RegionView {
 export class RegionController {
   constructor(@inject(TYPES.RegionRepository) private repo: RegionRepository) {}
 
-  @httpGet("/")
+  // Members-only (About sub-pages are gated): require a session to read.
+  @httpGet("/", requireAuth)
   async list(_req: Request, res: Response) {
     const regions = await this.repo.list();
     res.json({ regions: regions.map(toView) });

@@ -37,7 +37,8 @@ const writeGuards = [requireAuth, requireRole(...CONTENT_ROLES)] as const;
 export class OfficerController {
   constructor(@inject(TYPES.OfficerRepository) private repo: OfficerRepository) {}
 
-  @httpGet("/")
+  // Members-only (About sub-pages are gated): require a session to read.
+  @httpGet("/", requireAuth)
   async list(_req: Request, res: Response) {
     const officers = await this.repo.list();
     res.json({ officers: officers.map(toView) });

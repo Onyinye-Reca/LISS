@@ -229,3 +229,47 @@ model Region {
 
   @@map("regions")
 }
+
+// --- Sprint 4: Announcements + Gallery (PRD 4.6 / "Better Update") ---
+
+// News/update post shown in the announcements feed and the home preview.
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  body        String // long-form text (rendered with line breaks)
+  coverUrl    String? // optional banner image
+  publishedAt DateTime @default(now()) // the date shown; admin can backdate
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+// A gallery album groups photos from one event (PRD 4.6). Batch-uploaded.
+model Album {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  coverUrl    String? // falls back to the first image when null
+  eventDate   DateTime? // when the event happened
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  images      GalleryImage[]
+
+  @@map("albums")
+}
+
+// A single photo inside an album. Deleting the album removes its images.
+model GalleryImage {
+  id        String   @id @default(uuid())
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([albumId])
+  @@map("gallery_images")
+}
