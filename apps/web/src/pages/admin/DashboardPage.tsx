@@ -1,4 +1,17 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+
+// Modules with a built admin page link; the rest land in later sprints.
+const modules: { label: string; to?: string }[] = [
+  { label: "EXCOS", to: "/admin/excos" },
+  { label: "Board of Trustees", to: "/admin/bot" },
+  { label: "Regions", to: "/admin/regions" },
+  { label: "Announcements", to: "/admin/announcements" },
+  { label: "Gallery", to: "/admin/gallery" },
+  { label: "Events" },
+  { label: "Elections" },
+  { label: "Payments" },
+];
 
 export default function DashboardPage() {
   const { member } = useAuth();
@@ -8,18 +21,23 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-maroon">Dashboard</h1>
         <p className="mt-1 text-sm text-ink/60">
-          Welcome, {member?.fullName}. This is the protected admin shell. Feature
-          modules will be added here in later sprints.
+          Welcome, {member?.fullName}. Manage site content from the modules below.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {["Members", "Announcements", "Events", "Gallery", "Elections", "Payments"].map(
-          (label) => (
-            <div
+        {modules.map(({ label, to }) =>
+          to ? (
+            <Link
               key={label}
-              className="rounded-xl border border-gold/30 bg-white p-5"
+              to={to}
+              className="rounded-xl border border-gold/30 bg-white p-5 transition hover:border-gold hover:shadow-sm"
             >
+              <h2 className="font-semibold text-maroon">{label}</h2>
+              <p className="mt-1 text-sm text-ink/60">Manage →</p>
+            </Link>
+          ) : (
+            <div key={label} className="rounded-xl border border-gold/30 bg-white p-5">
               <h2 className="font-semibold text-maroon">{label}</h2>
               <p className="mt-1 text-sm text-ink/50">Coming in a later sprint</p>
             </div>

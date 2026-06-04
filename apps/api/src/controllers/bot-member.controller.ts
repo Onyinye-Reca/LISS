@@ -32,7 +32,8 @@ const writeGuards = [requireAuth, requireRole(...CONTENT_ROLES)] as const;
 export class BotMemberController {
   constructor(@inject(TYPES.BotMemberRepository) private repo: BotMemberRepository) {}
 
-  @httpGet("/")
+  // Members-only (About sub-pages are gated): require a session to read.
+  @httpGet("/", requireAuth)
   async list(_req: Request, res: Response) {
     const members = await this.repo.list();
     res.json({ members: members.map(toView) });

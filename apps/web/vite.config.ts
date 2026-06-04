@@ -16,5 +16,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    open: true, // launch the browser at http://localhost:5173 on dev start
   },
 });

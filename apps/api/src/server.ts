@@ -24,6 +24,8 @@ import "./controllers/upload.controller";
 import "./controllers/officer.controller";
 import "./controllers/bot-member.controller";
 import "./controllers/region.controller";
+import "./controllers/announcement.controller";
+import "./controllers/album.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";

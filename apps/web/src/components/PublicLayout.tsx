@@ -4,15 +4,17 @@ import { ADMIN_PANEL_ROLES, Role } from "@liss11/shared";
 import { useAuth } from "../auth/AuthContext";
 import UserMenu from "./UserMenu";
 
-// Public site nav, following the PRD site map (section 2).
+// Site nav, following the PRD site map (section 2). `auth: true` links are
+// members-only: hidden from the nav/footer when logged out, and their routes
+// + API endpoints require a session (see RequireMember + the API guards).
 const navLinks = [
   { to: "/", label: "Home", end: true },
   { to: "/about", label: "About" },
   { to: "/gallery", label: "Gallery" },
-  { to: "/events", label: "Events" },
-  { to: "/announcements", label: "Announcements" },
-  { to: "/donate", label: "Donate" },
-  { to: "/decides", label: "Decides" },
+  { to: "/events", label: "Events", auth: true },
+  { to: "/announcements", label: "Announcements", auth: true },
+  { to: "/donate", label: "Donate", auth: true },
+  { to: "/decides", label: "Decides", auth: true },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -53,6 +55,9 @@ function SocialIcon({ label, href, path }: (typeof socials)[number]) {
 export default function PublicLayout() {
   const { member, logout } = useAuth();
   const isAdmin = !!member && ADMIN_PANEL_ROLES.includes(member.role as Role);
+  // Hide members-only links from logged-out visitors.
+  const visibleLinks = navLinks.filter((l) => !l.auth || member);
+  const footerMembersLinks = visibleLinks.slice(4);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
@@ -68,10 +73,11 @@ export default function PublicLayout() {
           </Link>
 
           {/* Desktop nav: links sit between the logo and the account avatar,
-              which is pushed to the far right end of the bar. */}
-          <nav className="hidden flex-1 items-center md:flex">
+              which is pushed to the far right end of the bar. Shown only at lg+
+              where all 8 links fit; below that the hamburger takes over. */}
+          <nav className="hidden flex-1 items-center lg:flex">
             <div className="mx-auto flex items-center gap-5">
-              {navLinks.map((l) => (
+              {visibleLinks.map((l) => (
                 <NavLink key={l.to} to={l.to} end={l.end} className={linkClass}>
                   {l.label}
                 </NavLink>
@@ -91,10 +97,11 @@ export default function PublicLayout() {
             </div>
           </nav>
 
-          {/* Mobile hamburger (PRD 7.4: collapses below 768px) */}
+          {/* Mobile hamburger (PRD 7.4): shown below 1024px, where the full
+              horizontal nav would overflow. */}
           <button
             type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-maroon md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-maroon lg:hidden"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -110,10 +117,10 @@ export default function PublicLayout() {
         {menuOpen && (
           <nav
             id="mobile-menu"
-            className="border-t border-gold/20 bg-cream px-4 py-3 md:hidden"
+            className="border-t border-gold/20 bg-cream px-4 py-3 lg:hidden"
           >
             <ul className="flex flex-col">
-              {navLinks.map((l) => (
+              {visibleLinks.map((l) => (
                 <li key={l.to}>
                   <NavLink
                     to={l.to}
@@ -192,7 +199,7 @@ export default function PublicLayout() {
                 Explore
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {navLinks.slice(0, 4).map((l) => (
+                {visibleLinks.slice(0, 4).map((l) => (
                   <li key={l.to}>
                     <Link to={l.to} className="text-white/80 hover:text-white">
                       {l.label}
@@ -202,20 +209,22 @@ export default function PublicLayout() {
               </ul>
             </div>
 
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-wide text-white/60">
-                Members
+            {footerMembersLinks.length > 0 && (
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-wide text-white/60">
+                  Members
+                </div>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {footerMembersLinks.map((l) => (
+                    <li key={l.to}>
+                      <Link to={l.to} className="text-white/80 hover:text-white">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {navLinks.slice(4).map((l) => (
-                  <li key={l.to}>
-                    <Link to={l.to} className="text-white/80 hover:text-white">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
 
             <div>
               <div className="text-sm font-semibold uppercase tracking-wide text-white/60">

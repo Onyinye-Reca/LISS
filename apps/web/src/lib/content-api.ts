@@ -8,6 +8,14 @@ import {
   RegionView,
   RegionKey,
   RegionUpdateInput,
+  AnnouncementView,
+  AnnouncementCreateInput,
+  AnnouncementUpdateInput,
+  AlbumView,
+  AlbumCreateInput,
+  AlbumUpdateInput,
+  GalleryImageView,
+  GalleryImageCreateInput,
 } from "@liss11/shared";
 import { apiFetch } from "./api";
 
@@ -63,6 +71,58 @@ export async function getRegions(): Promise<RegionView[]> {
 export async function updateRegion(key: RegionKey, input: RegionUpdateInput): Promise<RegionView> {
   const res = await apiFetch(`/regions/${key}`, { method: "PUT", body: JSON.stringify(input) });
   return ok(res, (d: { region: RegionView }) => d.region, "Could not update region");
+}
+
+// --- Announcements ---
+export async function getAnnouncements(): Promise<AnnouncementView[]> {
+  const res = await apiFetch("/announcements");
+  return ok(res, (d: { announcements: AnnouncementView[] }) => d.announcements, "Failed to load announcements");
+}
+export async function getAnnouncement(id: string): Promise<AnnouncementView> {
+  const res = await apiFetch(`/announcements/${id}`);
+  return ok(res, (d: { announcement: AnnouncementView }) => d.announcement, "Announcement not found");
+}
+export async function createAnnouncement(input: AnnouncementCreateInput): Promise<AnnouncementView> {
+  const res = await apiFetch("/announcements", { method: "POST", body: JSON.stringify(input) });
+  return ok(res, (d: { announcement: AnnouncementView }) => d.announcement, "Could not create announcement");
+}
+export async function updateAnnouncement(id: string, input: AnnouncementUpdateInput): Promise<AnnouncementView> {
+  const res = await apiFetch(`/announcements/${id}`, { method: "PUT", body: JSON.stringify(input) });
+  return ok(res, (d: { announcement: AnnouncementView }) => d.announcement, "Could not update announcement");
+}
+export async function deleteAnnouncement(id: string): Promise<void> {
+  const res = await apiFetch(`/announcements/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete announcement");
+}
+
+// --- Gallery: albums + images ---
+export async function getAlbums(): Promise<AlbumView[]> {
+  const res = await apiFetch("/albums");
+  return ok(res, (d: { albums: AlbumView[] }) => d.albums, "Failed to load gallery");
+}
+export async function getAlbum(id: string): Promise<AlbumView> {
+  const res = await apiFetch(`/albums/${id}`);
+  return ok(res, (d: { album: AlbumView }) => d.album, "Album not found");
+}
+export async function createAlbum(input: AlbumCreateInput): Promise<AlbumView> {
+  const res = await apiFetch("/albums", { method: "POST", body: JSON.stringify(input) });
+  return ok(res, (d: { album: AlbumView }) => d.album, "Could not create album");
+}
+export async function updateAlbum(id: string, input: AlbumUpdateInput): Promise<AlbumView> {
+  const res = await apiFetch(`/albums/${id}`, { method: "PUT", body: JSON.stringify(input) });
+  return ok(res, (d: { album: AlbumView }) => d.album, "Could not update album");
+}
+export async function deleteAlbum(id: string): Promise<void> {
+  const res = await apiFetch(`/albums/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete album");
+}
+export async function addAlbumImage(albumId: string, input: GalleryImageCreateInput): Promise<GalleryImageView> {
+  const res = await apiFetch(`/albums/${albumId}/images`, { method: "POST", body: JSON.stringify(input) });
+  return ok(res, (d: { image: GalleryImageView }) => d.image, "Could not add image");
+}
+export async function deleteAlbumImage(imageId: string): Promise<void> {
+  const res = await apiFetch(`/albums/images/${imageId}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete image");
 }
 
 // --- Image upload ---
