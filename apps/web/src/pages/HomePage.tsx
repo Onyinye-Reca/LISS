@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlbumView, AnnouncementView } from "@liss11/shared";
 import { Alert, EmptyState } from "../components/ui";
@@ -6,13 +6,6 @@ import Accordion, { AccordionItem } from "../components/Accordion";
 import { getAlbums, getAnnouncements } from "../lib/content-api";
 import { formatDate } from "../lib/format";
 import { useAuth } from "../auth/AuthContext";
-
-// Hero media. Cloudinary-hosted placeholders (PRD picked Cloudinary). Swap
-// these public IDs for the real LISS11' hero once EXCOS supplies the video
-// (PRD 4.1 / open question #6). The maroon gradient behind the video means the
-// hero still looks intentional if the video fails to load (image fallback).
-const HERO_VIDEO = "https://res.cloudinary.com/demo/video/upload/sea_turtle.mp4";
-const HERO_POSTER = "https://res.cloudinary.com/demo/image/upload/sample.jpg";
 
 // PRD 4.1 / US-002: the four "Why must I join?" benefits.
 const whyJoin: AccordionItem[] = [
@@ -38,8 +31,6 @@ export default function HomePage() {
   const { member } = useAuth();
   const [params] = useSearchParams();
   const verified = params.get("verified");
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(true);
   const [albums, setAlbums] = useState<AlbumView[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementView[]>([]);
 
@@ -55,44 +46,11 @@ export default function HomePage() {
     }
   }, [member]);
 
-  const toggleVideo = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) {
-      void v.play();
-      setPlaying(true);
-    } else {
-      v.pause();
-      setPlaying(false);
-    }
-  };
-
   return (
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-maroon text-white">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={HERO_POSTER}
-        >
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
         <div className="absolute inset-0 bg-gradient-to-br from-maroon via-maroon/90 to-maroon-dark" />
-
-        {/* Play/Pause toggle (US-001: keyboard accessible) */}
-        <button
-          type="button"
-          onClick={toggleVideo}
-          aria-label={playing ? "Pause background video" : "Play background video"}
-          className="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-white backdrop-blur transition hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-        >
-          <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>
-        </button>
 
         <div className="relative mx-auto max-w-5xl px-4 py-24 sm:py-32">
           {verified === "1" && (
