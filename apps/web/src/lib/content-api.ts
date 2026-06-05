@@ -16,8 +16,15 @@ import {
   AlbumUpdateInput,
   GalleryImageView,
   GalleryImageCreateInput,
+  EventView,
+  EventCreateInput,
+  EventUpdateInput,
+  FinancialStatementView,
+  BlogPostView,
+  BlogPostCreateInput,
+  BlogPostUpdateInput,
 } from "@liss11/shared";
-import { apiFetch } from "./api";
+import { apiFetch, API_BASE } from "./api";
 
 async function ok<T>(res: Response, pick: (d: never) => T, fallback: string): Promise<T> {
   if (!res.ok) {
@@ -123,6 +130,82 @@ export async function addAlbumImage(albumId: string, input: GalleryImageCreateIn
 export async function deleteAlbumImage(imageId: string): Promise<void> {
   const res = await apiFetch(`/albums/images/${imageId}`, { method: "DELETE" });
   await ok(res, () => undefined, "Could not delete image");
+}
+
+// --- Events (members-only) ---
+export async function getEvents(): Promise<EventView[]> {
+  const res = await apiFetch("/events");
+  return ok(res, (d: { events: EventView[] }) => d.events, "Failed to load events");
+}
+export async function getEvent(id: string): Promise<EventView> {
+  const res = await apiFetch(`/events/${id}`);
+  return ok(res, (d: { event: EventView }) => d.event, "Event not found");
+}
+export async function createEvent(input: EventCreateInput): Promise<EventView> {
+  const res = await apiFetch("/events", { method: "POST", body: JSON.stringify(input) });
+  return ok(res, (d: { event: EventView }) => d.event, "Could not create event");
+}
+export async function updateEvent(id: string, input: EventUpdateInput): Promise<EventView> {
+  const res = await apiFetch(`/events/${id}`, { method: "PUT", body: JSON.stringify(input) });
+  return ok(res, (d: { event: EventView }) => d.event, "Could not update event");
+}
+export async function deleteEvent(id: string): Promise<void> {
+  const res = await apiFetch(`/events/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete event");
+}
+export async function rsvpEvent(id: string): Promise<EventView> {
+  const res = await apiFetch(`/events/${id}/rsvp`, { method: "POST" });
+  return ok(res, (d: { event: EventView }) => d.event, "Could not RSVP");
+}
+export async function cancelRsvp(id: string): Promise<EventView> {
+  const res = await apiFetch(`/events/${id}/rsvp`, { method: "DELETE" });
+  return ok(res, (d: { event: EventView }) => d.event, "Could not cancel RSVP");
+}
+
+// --- Financial statements (members-only; private files) ---
+export async function getFinancialStatements(): Promise<FinancialStatementView[]> {
+  const res = await apiFetch("/financials");
+  return ok(res, (d: { statements: FinancialStatementView[] }) => d.statements, "Failed to load statements");
+}
+export async function uploadFinancialStatement(
+  input: { title: string; period: string; file: File },
+): Promise<FinancialStatementView> {
+  const form = new FormData();
+  form.append("title", input.title);
+  if (input.period) form.append("period", input.period);
+  form.append("file", input.file);
+  const res = await apiFetch("/financials", { method: "POST", body: form });
+  return ok(res, (d: { statement: FinancialStatementView }) => d.statement, "Upload failed");
+}
+export async function deleteFinancialStatement(id: string): Promise<void> {
+  const res = await apiFetch(`/financials/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete statement");
+}
+/** Session-gated download endpoint; the cookie rides along on navigation. */
+export function financialDownloadUrl(id: string): string {
+  return `${API_BASE}/financials/${id}/download`;
+}
+
+// --- Blog (public; drafts visible to content-role admins) ---
+export async function getBlogPosts(): Promise<BlogPostView[]> {
+  const res = await apiFetch("/blog");
+  return ok(res, (d: { posts: BlogPostView[] }) => d.posts, "Failed to load blog");
+}
+export async function getBlogPost(slug: string): Promise<BlogPostView> {
+  const res = await apiFetch(`/blog/${slug}`);
+  return ok(res, (d: { post: BlogPostView }) => d.post, "Post not found");
+}
+export async function createBlogPost(input: BlogPostCreateInput): Promise<BlogPostView> {
+  const res = await apiFetch("/blog", { method: "POST", body: JSON.stringify(input) });
+  return ok(res, (d: { post: BlogPostView }) => d.post, "Could not create post");
+}
+export async function updateBlogPost(id: string, input: BlogPostUpdateInput): Promise<BlogPostView> {
+  const res = await apiFetch(`/blog/${id}`, { method: "PUT", body: JSON.stringify(input) });
+  return ok(res, (d: { post: BlogPostView }) => d.post, "Could not update post");
+}
+export async function deleteBlogPost(id: string): Promise<void> {
+  const res = await apiFetch(`/blog/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete post");
 }
 
 // --- Image upload ---

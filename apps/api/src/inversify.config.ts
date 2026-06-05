@@ -10,6 +10,9 @@ import { BotMemberRepository } from "./repositories/bot-member.repository";
 import { RegionRepository } from "./repositories/region.repository";
 import { AnnouncementRepository } from "./repositories/announcement.repository";
 import { AlbumRepository } from "./repositories/album.repository";
+import { EventRepository } from "./repositories/event.repository";
+import { FinancialStatementRepository } from "./repositories/financial-statement.repository";
+import { BlogPostRepository } from "./repositories/blog-post.repository";
 import { AuthService } from "./services/auth.service";
 import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
@@ -40,6 +43,11 @@ export function buildContainer(): Container {
   container.bind(TYPES.RegionRepository).to(RegionRepository);
   container.bind(TYPES.AnnouncementRepository).to(AnnouncementRepository);
   container.bind(TYPES.AlbumRepository).to(AlbumRepository);
+  container.bind(TYPES.EventRepository).to(EventRepository);
+  container
+    .bind(TYPES.FinancialStatementRepository)
+    .to(FinancialStatementRepository);
+  container.bind(TYPES.BlogPostRepository).to(BlogPostRepository);
   container.bind(TYPES.AuthService).to(AuthService);
   container.bind(TYPES.ContactService).to(ContactService);
 

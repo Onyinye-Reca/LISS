@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { AlbumView, AnnouncementView } from "@liss11/shared";
+import { AlbumView, AnnouncementView, EventView } from "@liss11/shared";
 import { Alert, EmptyState } from "../components/ui";
 import Accordion, { AccordionItem } from "../components/Accordion";
-import { getAlbums, getAnnouncements } from "../lib/content-api";
-import { formatDate } from "../lib/format";
+import { getAlbums, getAnnouncements, getEvents } from "../lib/content-api";
+import { formatDate, formatDateTime } from "../lib/format";
 import { useAuth } from "../auth/AuthContext";
 
 // PRD 4.1 / US-002: the four "Why must I join?" benefits.
@@ -33,12 +33,24 @@ export default function HomePage() {
   const verified = params.get("verified");
   const [albums, setAlbums] = useState<AlbumView[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementView[]>([]);
+  const [events, setEvents] = useState<EventView[]>([]);
 
-  // Gallery is public, so its strip always loads. Announcements are members-
-  // only (gated route + API), so only fetch them for logged-in members.
-  // Failures fall back to the empty state, so swallow errors.
+  // Gallery and events are public (events use per-event visibility, so guests
+  // get the public ones), so their strips load for everyone. Announcements are
+  // members-only. Failures fall back to the empty state, so swallow errors.
   useEffect(() => {
     getAlbums().then((a) => setAlbums(a.slice(0, 4))).catch(() => {});
+    getEvents()
+      .then((all) => {
+        const now = Date.now();
+        setEvents(
+          all
+            .filter((e) => new Date(e.startsAt).getTime() >= now)
+            .sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt))
+            .slice(0, 3),
+        );
+      })
+      .catch(() => {});
     if (member) {
       getAnnouncements().then((a) => setAnnouncements(a.slice(0, 3))).catch(() => {});
     } else {
@@ -77,12 +89,23 @@ export default function HomePage() {
             friendships endure and we keep building something bigger together.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/register"
-              className="rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-white hover:bg-gold-light"
-            >
-              Let's Get Started
-            </Link>
+            {/* Members are already in - point them at members' content instead
+                of a create-account CTA. */}
+            {member ? (
+              <Link
+                to="/events"
+                className="rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-white hover:bg-gold-light"
+              >
+                See upcoming events
+              </Link>
+            ) : (
+              <Link
+                to="/register"
+                className="rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-white hover:bg-gold-light"
+              >
+                Let's Get Started
+              </Link>
+            )}
             <Link
               to="/gallery"
               className="rounded-lg border border-white/40 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
@@ -93,23 +116,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why must I join? Accordion (US-002) */}
+      {/* Member benefits. Shown to everyone; only the Join Now CTA (which goes
+          to registration) is hidden once you're a logged-in member. */}
       <section className="mx-auto max-w-3xl px-4 py-16">
-        <h2 className="text-center text-2xl font-bold text-maroon">Why must I join?</h2>
+        <h2 className="text-center text-2xl font-bold text-maroon">
+          {member ? "Your member benefits" : "Why must I join?"}
+        </h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-ink/70">
-          Four good reasons to be part of the set.
+          {member
+            ? "Make the most of being part of the set."
+            : "Four good reasons to be part of the set."}
         </p>
         <div className="mt-8">
           <Accordion items={whyJoin} />
         </div>
-        <div className="mt-6 text-center">
-          <Link
-            to="/register"
-            className="inline-block rounded-lg bg-maroon px-5 py-3 text-sm font-semibold text-white hover:bg-maroon-dark"
-          >
-            Join Now
-          </Link>
-        </div>
+        {!member && (
+          <div className="mt-6 text-center">
+            <Link
+              to="/register"
+              className="inline-block rounded-lg bg-maroon px-5 py-3 text-sm font-semibold text-white hover:bg-maroon-dark"
+            >
+              Join Now
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* If love were in pictures. Gallery strip */}
@@ -198,8 +228,7 @@ export default function HomePage() {
       </section>
       )}
 
-      {/* Upcoming Events preview (members-only) */}
-      {member && (
+      {/* Upcoming Events preview (public - per-event visibility) */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-4 py-16">
           <div className="mb-6 flex items-end justify-between">
@@ -208,16 +237,38 @@ export default function HomePage() {
               View all →
             </Link>
           </div>
-          <EmptyState
-            icon="📅"
-            heading="No upcoming events"
-            description="Hangouts, Annual General Meetings and game nights will be listed here as they're scheduled."
-            ctaLabel="See events"
-            ctaTo="/events"
-          />
+          {events.length === 0 ? (
+            <EmptyState
+              icon="📅"
+              heading="No upcoming events"
+              description="Hangouts, Annual General Meetings and game nights will be listed here as they're scheduled."
+              ctaLabel="See events"
+              ctaTo="/events"
+            />
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-3">
+              {events.map((e) => (
+                <Link
+                  key={e.id}
+                  to="/events"
+                  className="block overflow-hidden rounded-xl border border-gold/30 bg-card transition hover:border-gold hover:shadow-sm"
+                >
+                  {e.coverUrl && (
+                    <img src={e.coverUrl} alt="" className="h-32 w-full object-cover" loading="lazy" />
+                  )}
+                  <div className="p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gold">
+                      {formatDateTime(e.startsAt)}
+                    </p>
+                    <h3 className="mt-1 font-semibold text-maroon">{e.title}</h3>
+                    {e.location && <p className="mt-1 text-xs text-ink/60">📍 {e.location}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
-      )}
     </>
   );
 }

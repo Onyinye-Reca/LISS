@@ -41,6 +41,7 @@ model Member {
   payments            Payment[]
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
+  eventRsvps          EventRsvp[]
 
   @@map("members")
 }
@@ -272,4 +273,76 @@ model GalleryImage {
 
   @@index([albumId])
   @@map("gallery_images")
+}
+
+// --- Sprint 5: Events + Financial Statements (members-only) ---
+
+// An alumni event (hangout, AGM, game night). Members can RSVP.
+model Event {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  coverUrl    String?
+  // Public events are visible to everyone (recruitment); members-only events
+  // are hidden from logged-out visitors. RSVP always requires login.
+  isPublic    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  rsvps       EventRsvp[]
+
+  @@index([startsAt])
+  @@map("events")
+}
+
+// A member's reservation for an event. Row present = attending; one per pair.
+model EventRsvp {
+  id        String   @id @default(uuid())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId  String
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, memberId])
+  @@index([eventId])
+  @@map("event_rsvps")
+}
+
+// A long-form blog article (distinct from short Announcements): public, with
+// an SEO-friendly slug, author, excerpt, and draft/publish support.
+model BlogPost {
+  id          String   @id @default(uuid())
+  slug        String   @unique // SEO-friendly URL segment, generated from title
+  title       String
+  excerpt     String? // short teaser for the list/preview
+  body        String // long-form content (rendered with line breaks)
+  coverUrl    String?
+  author      String
+  isPublished Boolean  @default(true) // drafts are hidden from the public
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+// A financial statement document (PRD: financial transparency). The file is a
+// private Cloudinary asset (or local-private in dev); never a public URL. Only
+// the storage reference is kept here - members download via a session-gated,
+// signed link (see FinancialController + StorageService.getDocumentUrl).
+model FinancialStatement {
+  id         String   @id @default(uuid())
+  title      String
+  period     String? // e.g. "2024" or "Q1 2024"
+  fileRef    String // storage reference: Cloudinary public_id, or local path
+  fileName   String? // original filename, for the download
+  uploadedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("financial_statements")
 }

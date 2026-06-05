@@ -10,6 +10,10 @@ import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
 import GalleryPage from "./pages/GalleryPage";
 import AlbumPage from "./pages/AlbumPage";
+import EventsPage from "./pages/EventsPage";
+import FinancialsPage from "./pages/FinancialsPage";
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -24,6 +28,9 @@ import BotAdminPage from "./pages/admin/BotAdminPage";
 import RegionsAdminPage from "./pages/admin/RegionsAdminPage";
 import AnnouncementsAdminPage from "./pages/admin/AnnouncementsAdminPage";
 import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
+import EventsAdminPage from "./pages/admin/EventsAdminPage";
+import FinancialsAdminPage from "./pages/admin/FinancialsAdminPage";
+import BlogAdminPage from "./pages/admin/BlogAdminPage";
 
 export default function App() {
   return (
@@ -35,6 +42,11 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/gallery/:id" element={<AlbumPage />} />
+        {/* Events are public to view (per-event visibility); RSVP needs login. */}
+        <Route path="/events" element={<EventsPage />} />
+        {/* Blog is public (SEO); drafts are visible only to content-role admins. */}
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/contact" element={<ContactPage />} />
 
         {/* Members-only. Logged-out visitors are redirected to /login. The
@@ -45,8 +57,8 @@ export default function App() {
           <Route path="/about/regions" element={<RegionsPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
+          <Route path="/financials" element={<FinancialsPage />} />
           {/* Not built yet, but gated so they don't leak to logged-out users. */}
-          <Route path="/events" element={<ComingSoonPage />} />
           <Route path="/donate" element={<ComingSoonPage />} />
           <Route path="/decides" element={<ComingSoonPage />} />
         </Route>
@@ -70,6 +82,9 @@ export default function App() {
           <Route path="regions" element={<RegionsAdminPage />} />
           <Route path="announcements" element={<AnnouncementsAdminPage />} />
           <Route path="gallery" element={<GalleryAdminPage />} />
+          <Route path="events" element={<EventsAdminPage />} />
+          <Route path="financials" element={<FinancialsAdminPage />} />
+          <Route path="blog" element={<BlogAdminPage />} />
         </Route>
       </Route>
     </Routes>

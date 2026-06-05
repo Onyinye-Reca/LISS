@@ -105,7 +105,7 @@ export default function AnnouncementsAdminPage() {
           <TextField label="Title" required value={editing.form.title} onChange={(e) => set({ title: e.target.value })} />
           <TextArea label="Body" required rows={8} value={editing.form.body} onChange={(e) => set({ body: e.target.value })} />
           <TextField
-            label="Publish date (optional — defaults to today)"
+            label="Publish date (optional - defaults to today)"
             type="date"
             value={editing.form.publishedAt}
             onChange={(e) => set({ publishedAt: e.target.value })}

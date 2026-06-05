@@ -20,7 +20,7 @@ export default function BotPage() {
         <h1 className="text-3xl font-bold text-maroon">Board of Trustees</h1>
         <p className="mx-auto mt-2 max-w-2xl text-ink/70">
           Our Board of Trustees provides guidance, governance, and continuity for the
-          association — stewarding its long-term interests.
+          association - stewarding its long-term interests.
         </p>
       </header>
 

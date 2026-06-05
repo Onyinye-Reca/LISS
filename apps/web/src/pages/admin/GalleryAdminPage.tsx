@@ -166,12 +166,17 @@ function AlbumEditor({
         <h2 className="font-semibold text-maroon">{current ? "Edit" : "New"} album</h2>
         {error && <Alert>{error}</Alert>}
         <ImageUpload
-          label="Cover image (optional — defaults to the first photo)"
+          label="Cover thumbnail (optional)"
           shape="rect"
           value={form.coverUrl}
           folder="gallery"
           onChange={(url) => set({ coverUrl: url })}
         />
+        <p className="rounded-lg bg-card px-3 py-2 text-xs text-ink/70">
+          The cover is just the album&apos;s thumbnail. The album&apos;s actual
+          pictures are added with <strong>“Add photos”</strong> below
+          {current ? "." : " (it appears once you create the album)."}
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label="Title" required value={form.title} onChange={(e) => set({ title: e.target.value })} />
           <TextField label="Event date (optional)" type="date" value={form.eventDate} onChange={(e) => set({ eventDate: e.target.value })} />

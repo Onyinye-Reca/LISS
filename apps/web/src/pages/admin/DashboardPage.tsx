@@ -8,7 +8,9 @@ const modules: { label: string; to?: string }[] = [
   { label: "Regions", to: "/admin/regions" },
   { label: "Announcements", to: "/admin/announcements" },
   { label: "Gallery", to: "/admin/gallery" },
-  { label: "Events" },
+  { label: "Events", to: "/admin/events" },
+  { label: "Financials", to: "/admin/financials" },
+  { label: "Blog", to: "/admin/blog" },
   { label: "Elections" },
   { label: "Payments" },
 ];

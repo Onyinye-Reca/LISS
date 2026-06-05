@@ -3,20 +3,60 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { ADMIN_PANEL_ROLES, Role } from "@liss11/shared";
 import { useAuth } from "../auth/AuthContext";
 import UserMenu from "./UserMenu";
+import NavDropdown from "./NavDropdown";
 
-// Site nav, following the PRD site map (section 2). `auth: true` links are
-// members-only: hidden from the nav/footer when logged out, and their routes
-// + API endpoints require a session (see RequireMember + the API guards).
-const navLinks = [
+type NavLeaf = { to: string; label: string; end?: boolean; auth?: boolean };
+type NavGroup = { label: string; children: NavLeaf[] };
+type NavItem = NavLeaf | NavGroup;
+
+const isGroup = (i: NavItem): i is NavGroup => "children" in i;
+
+// Site nav (PRD site map). `auth: true` items are members-only: hidden when
+// logged out (routes + API also enforce it). Related pages are grouped into
+// dropdowns to keep the top bar clean.
+const navItems: NavItem[] = [
   { to: "/", label: "Home", end: true },
   { to: "/about", label: "About" },
-  { to: "/gallery", label: "Gallery" },
-  { to: "/events", label: "Events", auth: true },
-  { to: "/announcements", label: "Announcements", auth: true },
-  { to: "/donate", label: "Donate", auth: true },
-  { to: "/decides", label: "Decides", auth: true },
+  {
+    label: "Explore",
+    children: [
+      { to: "/gallery", label: "Gallery" },
+      { to: "/events", label: "Events" },
+      { to: "/blog", label: "Blog" },
+      { to: "/announcements", label: "Announcements", auth: true },
+    ],
+  },
+  {
+    label: "Members",
+    children: [
+      { to: "/financials", label: "Financials", auth: true },
+      { to: "/donate", label: "Donate", auth: true },
+      { to: "/decides", label: "Decides", auth: true },
+    ],
+  },
   { to: "/contact", label: "Contact" },
 ];
+
+// Drop members-only items (and any now-empty groups) for logged-out visitors.
+function visibleNav(loggedIn: boolean): NavItem[] {
+  const out: NavItem[] = [];
+  for (const item of navItems) {
+    if (isGroup(item)) {
+      const children = item.children.filter((c) => !c.auth || loggedIn);
+      if (children.length) out.push({ ...item, children });
+    } else if (!item.auth || loggedIn) {
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+function groupChildren(label: string, loggedIn: boolean): NavLeaf[] {
+  const g = navItems.find((i) => isGroup(i) && i.label === label) as
+    | NavGroup
+    | undefined;
+  return (g?.children ?? []).filter((c) => !c.auth || loggedIn);
+}
 
 const socials = [
   {
@@ -55,14 +95,18 @@ function SocialIcon({ label, href, path }: (typeof socials)[number]) {
 export default function PublicLayout() {
   const { member, logout } = useAuth();
   const isAdmin = !!member && ADMIN_PANEL_ROLES.includes(member.role as Role);
-  // Hide members-only links from logged-out visitors.
-  const visibleLinks = navLinks.filter((l) => !l.auth || member);
-  const footerMembersLinks = visibleLinks.slice(4);
+  const items = visibleNav(!!member);
+  const exploreLinks = groupChildren("Explore", !!member);
+  const membersLinks = groupChildren("Members", !!member);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium ${isActive ? "text-gold" : "text-ink/70 hover:text-gold"}`;
+  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `block rounded-lg px-2 py-3 text-base font-medium ${
+      isActive ? "text-gold" : "text-ink hover:text-gold"
+    }`;
 
   return (
     <div className="flex min-h-screen flex-col bg-cream font-sans text-ink">
@@ -72,16 +116,19 @@ export default function PublicLayout() {
             LISS11' Alumni
           </Link>
 
-          {/* Desktop nav: links sit between the logo and the account avatar,
-              which is pushed to the far right end of the bar. Shown only at lg+
-              where all 8 links fit; below that the hamburger takes over. */}
+          {/* Desktop nav: grouped links + dropdowns. Shown at lg+; below that
+              the hamburger takes over. */}
           <nav className="hidden flex-1 items-center lg:flex">
-            <div className="mx-auto flex items-center gap-5">
-              {visibleLinks.map((l) => (
-                <NavLink key={l.to} to={l.to} end={l.end} className={linkClass}>
-                  {l.label}
-                </NavLink>
-              ))}
+            <div className="mx-auto flex items-center gap-6">
+              {items.map((item) =>
+                isGroup(item) ? (
+                  <NavDropdown key={item.label} label={item.label} items={item.children} />
+                ) : (
+                  <NavLink key={item.to} to={item.to} end={item.end} className={linkClass}>
+                    {item.label}
+                  </NavLink>
+                ),
+              )}
             </div>
             <div className="ml-4 shrink-0">
               {member ? (
@@ -97,8 +144,7 @@ export default function PublicLayout() {
             </div>
           </nav>
 
-          {/* Mobile hamburger (PRD 7.4): shown below 1024px, where the full
-              horizontal nav would overflow. */}
+          {/* Mobile hamburger (PRD 7.4): shown below 1024px. */}
           <button
             type="button"
             className="flex h-11 w-11 items-center justify-center rounded-lg text-maroon lg:hidden"
@@ -113,29 +159,33 @@ export default function PublicLayout() {
           </button>
         </div>
 
-        {/* Mobile menu panel */}
+        {/* Mobile menu panel: groups become labelled sections. */}
         {menuOpen && (
           <nav
             id="mobile-menu"
             className="border-t border-gold/20 bg-cream px-4 py-3 lg:hidden"
           >
             <ul className="flex flex-col">
-              {visibleLinks.map((l) => (
-                <li key={l.to}>
-                  <NavLink
-                    to={l.to}
-                    end={l.end}
-                    onClick={closeMenu}
-                    className={({ isActive }) =>
-                      `block rounded-lg px-2 py-3 text-base font-medium ${
-                        isActive ? "text-gold" : "text-ink hover:text-gold"
-                      }`
-                    }
-                  >
-                    {l.label}
-                  </NavLink>
-                </li>
-              ))}
+              {items.map((item) =>
+                isGroup(item) ? (
+                  <li key={item.label} className="mt-1">
+                    <div className="px-2 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
+                      {item.label}
+                    </div>
+                    {item.children.map((c) => (
+                      <NavLink key={c.to} to={c.to} onClick={closeMenu} className={mobileLinkClass}>
+                        {c.label}
+                      </NavLink>
+                    ))}
+                  </li>
+                ) : (
+                  <li key={item.to}>
+                    <NavLink to={item.to} end={item.end} onClick={closeMenu} className={mobileLinkClass}>
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ),
+              )}
               <li className="mt-2 border-t border-gold/20 pt-3">
                 {member ? (
                   <div className="flex flex-col gap-1">
@@ -177,7 +227,7 @@ export default function PublicLayout() {
         <Outlet />
       </div>
 
-      {/* Footer. PRD 9.3: maroon background, white text, full nav + socials */}
+      {/* Footer. PRD 9.3: maroon background, white text, grouped nav + socials */}
       <footer className="bg-maroon text-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
@@ -192,6 +242,10 @@ export default function PublicLayout() {
               >
                 info@liss11.org
               </a>
+              <div className="mt-3 flex gap-3 text-sm text-white/80">
+                <Link to="/about" className="hover:text-white">About</Link>
+                <Link to="/contact" className="hover:text-white">Contact</Link>
+              </div>
             </div>
 
             <div>
@@ -199,7 +253,7 @@ export default function PublicLayout() {
                 Explore
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {visibleLinks.slice(0, 4).map((l) => (
+                {exploreLinks.map((l) => (
                   <li key={l.to}>
                     <Link to={l.to} className="text-white/80 hover:text-white">
                       {l.label}
@@ -209,13 +263,13 @@ export default function PublicLayout() {
               </ul>
             </div>
 
-            {footerMembersLinks.length > 0 && (
+            {membersLinks.length > 0 && (
               <div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-white/60">
                   Members
                 </div>
                 <ul className="mt-3 space-y-2 text-sm">
-                  {footerMembersLinks.map((l) => (
+                  {membersLinks.map((l) => (
                     <li key={l.to}>
                       <Link to={l.to} className="text-white/80 hover:text-white">
                         {l.label}
