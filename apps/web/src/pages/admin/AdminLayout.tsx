@@ -8,6 +8,9 @@ const navItems = [
   { to: "/admin/regions", label: "Regions", end: false },
   { to: "/admin/announcements", label: "Announcements", end: false },
   { to: "/admin/gallery", label: "Gallery", end: false },
+  { to: "/admin/events", label: "Events", end: false },
+  { to: "/admin/financials", label: "Financials", end: false },
+  { to: "/admin/blog", label: "Blog", end: false },
 ];
 
 export default function AdminLayout() {

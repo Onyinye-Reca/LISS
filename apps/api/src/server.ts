@@ -26,6 +26,9 @@ import "./controllers/bot-member.controller";
 import "./controllers/region.controller";
 import "./controllers/announcement.controller";
 import "./controllers/album.controller";
+import "./controllers/event.controller";
+import "./controllers/financial-statement.controller";
+import "./controllers/blog-post.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";

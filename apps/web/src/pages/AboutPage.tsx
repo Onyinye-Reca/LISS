@@ -27,7 +27,7 @@ export default function AboutPage() {
       <header className="text-center">
         <h1 className="text-3xl font-bold text-maroon">About Us</h1>
         <p className="mx-auto mt-3 max-w-2xl text-ink/70">
-          The LISS Class of 2011 Alumni Association is the digital home of our set —
+          The LISS Class of 2011 Alumni Association is the digital home of our set -
           a place to reconnect, stay informed, celebrate one another, and give back.
         </p>
       </header>
@@ -42,7 +42,7 @@ export default function AboutPage() {
             <h2 className="text-lg font-semibold text-maroon">{s.title}</h2>
             <p className="mt-2 text-sm text-ink/70">{s.body}</p>
             <span className="mt-4 inline-block text-sm font-semibold text-maroon">
-              {member ? "View →" : "🔒 Members only — log in to view"}
+              {member ? "View →" : "🔒 Members only - log in to view"}
             </span>
           </Link>
         ))}

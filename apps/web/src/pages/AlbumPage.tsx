@@ -20,7 +20,12 @@ export default function AlbumPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const images: GalleryImageView[] = album?.images ?? [];
+  // Show the album's photos; if none were added but a cover exists, fall back
+  // to showing the cover so the page is never blank for visitors.
+  const images: GalleryImageView[] =
+    album && album.images.length === 0 && album.coverUrl
+      ? [{ id: "cover", url: album.coverUrl, caption: null, sortOrder: 0 }]
+      : album?.images ?? [];
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-16">

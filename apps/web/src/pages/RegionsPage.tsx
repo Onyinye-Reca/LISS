@@ -18,7 +18,7 @@ export default function RegionsPage() {
       <header className="text-center">
         <h1 className="text-3xl font-bold text-maroon">Where are we?</h1>
         <p className="mx-auto mt-2 max-w-2xl text-ink/70">
-          Our members are spread across these regions. This is a "where are we" map —
+          Our members are spread across these regions. This is a "where are we" map -
           not branch offices. Reach your Regional Rep below.
         </p>
       </header>
@@ -76,7 +76,7 @@ export default function RegionsPage() {
                   </>
                 ) : (
                   <p className="text-sm text-ink/60">
-                    Rep: TBD —{" "}
+                    Rep: TBD -{" "}
                     <a href="/contact" className="font-medium text-maroon hover:underline">
                       contact the Secretary
                     </a>

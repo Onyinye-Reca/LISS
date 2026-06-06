@@ -23,6 +23,10 @@ const nullableDate = z.preprocess(
     .nullable()
     .optional(),
 );
+// A required date/datetime string (e.g. from a datetime-local input).
+const requiredDate = z
+  .string()
+  .refine((s) => !Number.isNaN(Date.parse(s)), "Invalid date");
 
 // --- EXCOS / Officers (PRD 4.3) ---
 export const OFFICER_TIERS = [
@@ -182,4 +186,83 @@ export interface AlbumView {
   sortOrder: number;
   imageCount: number;
   images: GalleryImageView[];
+}
+
+// --- Events (PRD: alumni events, members-only) ---
+export const EventCreateSchema = z.object({
+  title: z.string().min(2).max(200),
+  description: nullableStr(5000),
+  location: nullableStr(200),
+  startsAt: requiredDate,
+  endsAt: nullableDate,
+  coverUrl: nullableUrl,
+  // Public events show to everyone; members-only events are hidden from guests.
+  isPublic: z.boolean().optional().default(true),
+});
+export type EventCreateInput = z.infer<typeof EventCreateSchema>;
+export const EventUpdateSchema = EventCreateSchema.partial();
+export type EventUpdateInput = z.infer<typeof EventUpdateSchema>;
+
+export interface EventView {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startsAt: string; // ISO string
+  endsAt: string | null;
+  coverUrl: string | null;
+  isPublic: boolean;
+  rsvpCount: number;
+  isAttending: boolean; // for the requesting member (false when logged out)
+}
+
+// --- Financial Statements (PRD: financial transparency, members-only) ---
+// The file is uploaded as multipart; only the metadata is validated here.
+export const FinancialStatementCreateSchema = z.object({
+  title: z.string().min(2).max(200),
+  period: nullableStr(50),
+});
+export type FinancialStatementCreateInput = z.infer<
+  typeof FinancialStatementCreateSchema
+>;
+export const FinancialStatementUpdateSchema =
+  FinancialStatementCreateSchema.partial();
+export type FinancialStatementUpdateInput = z.infer<
+  typeof FinancialStatementUpdateSchema
+>;
+
+export interface FinancialStatementView {
+  id: string;
+  title: string;
+  period: string | null;
+  fileName: string | null;
+  uploadedAt: string; // ISO string
+  // No file URL is exposed; download via GET /financials/:id/download (gated).
+}
+
+// --- Blog (PRD: long-form articles, public, distinct from Announcements) ---
+// The slug is generated server-side from the title, so it is not an input.
+export const BlogPostCreateSchema = z.object({
+  title: z.string().min(2).max(200),
+  excerpt: nullableStr(500),
+  body: z.string().min(1).max(50000),
+  coverUrl: nullableUrl,
+  author: z.string().min(1).max(120),
+  isPublished: z.boolean().optional().default(true),
+  publishedAt: nullableDate,
+});
+export type BlogPostCreateInput = z.infer<typeof BlogPostCreateSchema>;
+export const BlogPostUpdateSchema = BlogPostCreateSchema.partial();
+export type BlogPostUpdateInput = z.infer<typeof BlogPostUpdateSchema>;
+
+export interface BlogPostView {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  coverUrl: string | null;
+  author: string;
+  isPublished: boolean;
+  publishedAt: string; // ISO string
 }
