@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { randomUUID } from "crypto";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join, extname } from "path";
 
 export interface UploadedFile {
@@ -26,6 +26,8 @@ export interface StorageService {
   uploadDocument(file: UploadedFile, folder: string): Promise<string>;
   /** Resolves a stored reference into a way to deliver the file. */
   getDocument(ref: string, fileName: string): Promise<DocumentDelivery>;
+  /** Removes a stored document so deletes don't leave orphaned files. */
+  deleteDocument(ref: string): Promise<void>;
 }
 
 /** Real uploads via Cloudinary (PRD §8). Reads CLOUDINARY_URL from the env. */
@@ -77,17 +79,28 @@ export class CloudinaryStorageService implements StorageService {
     });
   }
 
-  async getDocument(ref: string, fileName: string): Promise<DocumentDelivery> {
+  async getDocument(ref: string): Promise<DocumentDelivery> {
     const cloudinary = this.sdk();
-    const format = extname(fileName).replace(".", ""); // raw uses format separately
-    // Signed, time-limited download URL (~10 min). Only handed to members the
-    // controller has already authenticated.
-    const redirectUrl = cloudinary.utils.private_download_url(ref, format, {
+    // Signed *inline* delivery URL so the PDF previews in the browser (rather
+    // than force-downloading). The asset is `authenticated`, so it is only
+    // reachable with this signature - and the controller only mints it after
+    // checking the member's session. Requires Cloudinary's "Allow delivery of
+    // PDF and ZIP files" setting to be enabled.
+    const redirectUrl = cloudinary.url(ref, {
       resource_type: "raw",
       type: "authenticated",
-      expires_at: Math.floor(Date.now() / 1000) + 600,
+      sign_url: true,
+      secure: true,
     });
     return { redirectUrl };
+  }
+
+  async deleteDocument(ref: string): Promise<void> {
+    const cloudinary = this.sdk();
+    await cloudinary.uploader.destroy(ref, {
+      resource_type: "raw",
+      type: "authenticated",
+    });
   }
 }
 
@@ -121,5 +134,10 @@ export class LocalStorageService implements StorageService {
 
   async getDocument(ref: string): Promise<DocumentDelivery> {
     return { localPath: join(this.privateDir, ref) };
+  }
+
+  async deleteDocument(ref: string): Promise<void> {
+    // Ignore if the file is already gone.
+    await unlink(join(this.privateDir, ref)).catch(() => undefined);
   }
 }

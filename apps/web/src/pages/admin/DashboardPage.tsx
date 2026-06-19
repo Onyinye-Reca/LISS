@@ -11,6 +11,8 @@ const modules: { label: string; to?: string }[] = [
   { label: "Events", to: "/admin/events" },
   { label: "Financials", to: "/admin/financials" },
   { label: "Blog", to: "/admin/blog" },
+  { label: "Contact Messages", to: "/admin/contact" },
+  { label: "Site Settings", to: "/admin/settings" },
   { label: "Elections" },
   { label: "Payments" },
 ];

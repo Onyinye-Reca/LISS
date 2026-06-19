@@ -13,6 +13,7 @@ export const TYPES = {
   EventRepository: Symbol.for("EventRepository"),
   FinancialStatementRepository: Symbol.for("FinancialStatementRepository"),
   BlogPostRepository: Symbol.for("BlogPostRepository"),
+  SiteSettingRepository: Symbol.for("SiteSettingRepository"),
   AuthService: Symbol.for("AuthService"),
   ContactService: Symbol.for("ContactService"),
   EmailService: Symbol.for("EmailService"),

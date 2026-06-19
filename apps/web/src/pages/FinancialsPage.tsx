@@ -53,7 +53,7 @@ export default function FinancialsPage() {
                 rel="noopener noreferrer"
                 className="shrink-0 rounded-lg bg-maroon px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-dark"
               >
-                Download PDF
+                View PDF
               </a>
             </li>
           ))}

@@ -23,6 +23,9 @@ import {
   BlogPostView,
   BlogPostCreateInput,
   BlogPostUpdateInput,
+  ContactMessageView,
+  SiteSettingsView,
+  SiteSettingsUpdateInput,
 } from "@liss11/shared";
 import { apiFetch, API_BASE } from "./api";
 
@@ -127,6 +130,10 @@ export async function addAlbumImage(albumId: string, input: GalleryImageCreateIn
   const res = await apiFetch(`/albums/${albumId}/images`, { method: "POST", body: JSON.stringify(input) });
   return ok(res, (d: { image: GalleryImageView }) => d.image, "Could not add image");
 }
+export async function updateAlbumImage(imageId: string, caption: string | null): Promise<GalleryImageView> {
+  const res = await apiFetch(`/albums/images/${imageId}`, { method: "PUT", body: JSON.stringify({ caption }) });
+  return ok(res, (d: { image: GalleryImageView }) => d.image, "Could not update caption");
+}
 export async function deleteAlbumImage(imageId: string): Promise<void> {
   const res = await apiFetch(`/albums/images/${imageId}`, { method: "DELETE" });
   await ok(res, () => undefined, "Could not delete image");
@@ -206,6 +213,26 @@ export async function updateBlogPost(id: string, input: BlogPostUpdateInput): Pr
 export async function deleteBlogPost(id: string): Promise<void> {
   const res = await apiFetch(`/blog/${id}`, { method: "DELETE" });
   await ok(res, () => undefined, "Could not delete post");
+}
+
+// --- Contact messages (admin inbox) ---
+export async function getContactMessages(): Promise<ContactMessageView[]> {
+  const res = await apiFetch("/contact");
+  return ok(res, (d: { messages: ContactMessageView[] }) => d.messages, "Failed to load messages");
+}
+export async function deleteContactMessage(id: string): Promise<void> {
+  const res = await apiFetch(`/contact/${id}`, { method: "DELETE" });
+  await ok(res, () => undefined, "Could not delete message");
+}
+
+// --- Site settings (hero media) ---
+export async function getSiteSettings(): Promise<SiteSettingsView> {
+  const res = await apiFetch("/settings");
+  return ok(res, (d: { settings: SiteSettingsView }) => d.settings, "Failed to load settings");
+}
+export async function updateSiteSettings(input: SiteSettingsUpdateInput): Promise<SiteSettingsView> {
+  const res = await apiFetch("/settings", { method: "PUT", body: JSON.stringify(input) });
+  return ok(res, (d: { settings: SiteSettingsView }) => d.settings, "Could not save settings");
 }
 
 // --- Image upload ---

@@ -169,6 +169,10 @@ export const GalleryImageCreateSchema = z.object({
   sortOrder: z.number().int().optional().default(0),
 });
 export type GalleryImageCreateInput = z.infer<typeof GalleryImageCreateSchema>;
+export const GalleryImageUpdateSchema = z.object({
+  caption: nullableStr(300),
+});
+export type GalleryImageUpdateInput = z.infer<typeof GalleryImageUpdateSchema>;
 
 export interface GalleryImageView {
   id: string;
@@ -238,6 +242,26 @@ export interface FinancialStatementView {
   fileName: string | null;
   uploadedAt: string; // ISO string
   // No file URL is exposed; download via GET /financials/:id/download (gated).
+}
+
+// --- Site settings (editable, public-facing config like the hero media) ---
+export interface SiteSettingsView {
+  heroVideoUrl: string | null;
+  heroPosterUrl: string | null;
+}
+export const SiteSettingsUpdateSchema = z.object({
+  heroVideoUrl: nullableUrl,
+  heroPosterUrl: nullableUrl,
+});
+export type SiteSettingsUpdateInput = z.infer<typeof SiteSettingsUpdateSchema>;
+
+// --- Contact messages (admin inbox view) ---
+export interface ContactMessageView {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string; // ISO string
 }
 
 // --- Blog (PRD: long-form articles, public, distinct from Announcements) ---
