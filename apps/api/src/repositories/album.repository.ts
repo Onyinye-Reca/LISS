@@ -54,6 +54,13 @@ export class AlbumRepository {
     });
   }
 
+  updateImage(
+    imageId: string,
+    data: { caption?: string | null },
+  ): Promise<GalleryImage> {
+    return this.prisma.galleryImage.update({ where: { id: imageId }, data });
+  }
+
   deleteImage(imageId: string): Promise<GalleryImage> {
     return this.prisma.galleryImage.delete({ where: { id: imageId } });
   }

@@ -4,6 +4,7 @@ import {
   getFinancialStatements,
   uploadFinancialStatement,
   deleteFinancialStatement,
+  financialDownloadUrl,
 } from "../../lib/content-api";
 import { Button, TextField, Alert } from "../../components/ui";
 import { formatDate } from "../../lib/format";
@@ -59,7 +60,7 @@ export default function FinancialsAdminPage() {
       <h1 className="text-2xl font-bold text-maroon">Financial Statements</h1>
       <p className="text-sm text-ink/60">
         Upload PDF statements. Files are stored privately - only logged-in members
-        can download them, via a short-lived signed link.
+        can open them, via a session-gated signed link. Click View to preview.
       </p>
 
       {error && <Alert>{error}</Alert>}
@@ -103,6 +104,14 @@ export default function FinancialsAdminPage() {
                   <td className="px-4 py-2 text-ink/60">{s.period ?? "-"}</td>
                   <td className="px-4 py-2 text-ink/60">{formatDate(s.uploadedAt)}</td>
                   <td className="px-4 py-2 text-right">
+                    <a
+                      href={financialDownloadUrl(s.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mr-3 font-medium text-maroon hover:underline"
+                    >
+                      View
+                    </a>
                     <button onClick={() => void remove(s)} className="font-medium text-danger hover:underline">Delete</button>
                   </td>
                 </tr>

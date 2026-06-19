@@ -11,6 +11,8 @@ const navItems = [
   { to: "/admin/events", label: "Events", end: false },
   { to: "/admin/financials", label: "Financials", end: false },
   { to: "/admin/blog", label: "Blog", end: false },
+  { to: "/admin/contact", label: "Contact Messages", end: false },
+  { to: "/admin/settings", label: "Site Settings", end: false },
 ];
 
 export default function AdminLayout() {

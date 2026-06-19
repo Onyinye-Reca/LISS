@@ -311,6 +311,16 @@ model EventRsvp {
   @@map("event_rsvps")
 }
 
+// Key-value store for editable site settings (e.g. hero video/poster URLs).
+// Small and generic so new settings don't need schema changes.
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
 // A long-form blog article (distinct from short Announcements): public, with
 // an SEO-friendly slug, author, excerpt, and draft/publish support.
 model BlogPost {

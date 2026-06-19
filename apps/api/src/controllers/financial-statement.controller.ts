@@ -63,7 +63,8 @@ export class FinancialStatementController {
       const name = stmt.fileName ?? "statement.pdf";
       const delivery = await this.storage.getDocument(stmt.fileRef, name);
       if (delivery.redirectUrl) return res.redirect(delivery.redirectUrl);
-      if (delivery.localPath) return res.download(delivery.localPath, name);
+      // Stream inline (not res.download) so the PDF previews in the browser.
+      if (delivery.localPath) return res.sendFile(delivery.localPath);
       return res.status(500).json({ error: "File unavailable" });
     } catch (err) {
       captureError(err);
@@ -122,7 +123,16 @@ export class FinancialStatementController {
   @httpDelete("/:id", ...writeGuards)
   async remove(req: { params: { id: string } }, res: Response) {
     try {
-      await this.repo.delete(req.params.id);
+      const stmt = await this.repo.findById(req.params.id);
+      if (!stmt) return res.status(404).json({ error: "Statement not found" });
+      await this.repo.delete(stmt.id);
+      // Best-effort: remove the stored file so we don't orphan it. A storage
+      // hiccup shouldn't fail the delete (the DB record is already gone).
+      try {
+        await this.storage.deleteDocument(stmt.fileRef);
+      } catch (cleanupErr) {
+        captureError(cleanupErr);
+      }
       res.json({ ok: true });
     } catch (err) {
       if ((err as { code?: string }).code === "P2025") {

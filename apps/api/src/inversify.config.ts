@@ -13,6 +13,7 @@ import { AlbumRepository } from "./repositories/album.repository";
 import { EventRepository } from "./repositories/event.repository";
 import { FinancialStatementRepository } from "./repositories/financial-statement.repository";
 import { BlogPostRepository } from "./repositories/blog-post.repository";
+import { SiteSettingRepository } from "./repositories/site-setting.repository";
 import { AuthService } from "./services/auth.service";
 import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
@@ -48,6 +49,7 @@ export function buildContainer(): Container {
     .bind(TYPES.FinancialStatementRepository)
     .to(FinancialStatementRepository);
   container.bind(TYPES.BlogPostRepository).to(BlogPostRepository);
+  container.bind(TYPES.SiteSettingRepository).to(SiteSettingRepository);
   container.bind(TYPES.AuthService).to(AuthService);
   container.bind(TYPES.ContactService).to(ContactService);
 

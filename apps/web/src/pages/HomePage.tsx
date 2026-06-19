@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { AlbumView, AnnouncementView, EventView } from "@liss11/shared";
+import {
+  AlbumView,
+  AnnouncementView,
+  EventView,
+  SiteSettingsView,
+} from "@liss11/shared";
 import { Alert, EmptyState } from "../components/ui";
 import Accordion, { AccordionItem } from "../components/Accordion";
-import { getAlbums, getAnnouncements, getEvents } from "../lib/content-api";
+import {
+  getAlbums,
+  getAnnouncements,
+  getEvents,
+  getSiteSettings,
+} from "../lib/content-api";
 import { formatDate, formatDateTime } from "../lib/format";
 import { useAuth } from "../auth/AuthContext";
 
@@ -34,6 +44,29 @@ export default function HomePage() {
   const [albums, setAlbums] = useState<AlbumView[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementView[]>([]);
   const [events, setEvents] = useState<EventView[]>([]);
+  const [hero, setHero] = useState<SiteSettingsView>({
+    heroVideoUrl: null,
+    heroPosterUrl: null,
+  });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(true);
+
+  // Admin-managed hero media (optional). Falls back to the maroon gradient.
+  useEffect(() => {
+    getSiteSettings().then(setHero).catch(() => {});
+  }, []);
+
+  const toggleVideo = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      void v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
 
   // Gallery and events are public (events use per-event visibility, so guests
   // get the public ones), so their strips load for everyone. Announcements are
@@ -62,7 +95,32 @@ export default function HomePage() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-maroon text-white">
+        {/* Admin-set background video (optional); maroon gradient over it. */}
+        {hero.heroVideoUrl && (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full object-cover opacity-30"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={hero.heroPosterUrl ?? undefined}
+          >
+            <source src={hero.heroVideoUrl} type="video/mp4" />
+          </video>
+        )}
         <div className="absolute inset-0 bg-gradient-to-br from-maroon via-maroon/90 to-maroon-dark" />
+
+        {hero.heroVideoUrl && (
+          <button
+            type="button"
+            onClick={toggleVideo}
+            aria-label={playing ? "Pause background video" : "Play background video"}
+            className="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-white backdrop-blur transition hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+          >
+            <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>
+          </button>
+        )}
 
         <div className="relative mx-auto max-w-5xl px-4 py-24 sm:py-32">
           {verified === "1" && (

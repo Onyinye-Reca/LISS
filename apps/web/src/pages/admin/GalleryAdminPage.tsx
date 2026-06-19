@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { AlbumView, AlbumCreateInput } from "@liss11/shared";
+import { AlbumView, AlbumCreateInput, GalleryImageView } from "@liss11/shared";
 import {
   getAlbums,
   createAlbum,
@@ -7,6 +7,7 @@ import {
   deleteAlbum,
   getAlbum,
   addAlbumImage,
+  updateAlbumImage,
   deleteAlbumImage,
   uploadImage,
 } from "../../lib/content-api";
@@ -103,20 +104,64 @@ function AlbumImages({ album, onChange }: { album: AlbumView; onChange: () => vo
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
           {album.images.map((img) => (
-            <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg bg-ink/5">
-              <img src={img.url} alt={img.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
-              <button
-                type="button"
-                onClick={() => void removeImage(img.id)}
-                aria-label="Delete photo"
-                className="absolute right-1 top-1 hidden h-6 w-6 items-center justify-center rounded-full bg-black/60 text-sm text-white group-hover:flex"
-              >
-                ×
-              </button>
-            </div>
+            <ImageCell
+              key={img.id}
+              img={img}
+              onRemove={() => void removeImage(img.id)}
+              onChange={onChange}
+            />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/** One gallery photo with a delete button and a save-on-blur caption field. */
+function ImageCell({
+  img,
+  onRemove,
+  onChange,
+}: {
+  img: GalleryImageView;
+  onRemove: () => void;
+  onChange: () => void;
+}) {
+  const [caption, setCaption] = useState(img.caption ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (caption.trim() === (img.caption ?? "")) return; // unchanged
+    setSaving(true);
+    try {
+      await updateAlbumImage(img.id, caption.trim() || null);
+      onChange();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="group relative aspect-square overflow-hidden rounded-lg bg-ink/5">
+        <img src={img.url} alt={img.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Delete photo"
+          className="absolute right-1 top-1 hidden h-6 w-6 items-center justify-center rounded-full bg-black/60 text-sm text-white group-hover:flex"
+        >
+          ×
+        </button>
+      </div>
+      <input
+        type="text"
+        value={caption}
+        onChange={(e) => setCaption(e.target.value)}
+        onBlur={() => void save()}
+        placeholder={saving ? "Saving…" : "Add caption"}
+        className="mt-1 w-full rounded border border-ink/15 px-2 py-1 text-xs outline-none focus:border-gold"
+      />
     </div>
   );
 }

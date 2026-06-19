@@ -5,6 +5,7 @@ import {
   AlbumCreateSchema,
   AlbumUpdateSchema,
   GalleryImageCreateSchema,
+  GalleryImageUpdateSchema,
   AlbumView,
   GalleryImageView,
   CONTENT_ROLES,
@@ -127,6 +128,20 @@ export class AlbumController {
       }
       captureError(err);
       res.status(500).json({ error: "Could not add image" });
+    }
+  }
+
+  @httpPut("/images/:imageId", ...writeGuards, validateBody(GalleryImageUpdateSchema))
+  async updateImage(req: Request, res: Response) {
+    try {
+      const image = await this.repo.updateImage(req.params.imageId, req.body);
+      res.json({ image: imageView(image) });
+    } catch (err) {
+      if ((err as { code?: string }).code === "P2025") {
+        return res.status(404).json({ error: "Image not found" });
+      }
+      captureError(err);
+      res.status(500).json({ error: "Could not update image" });
     }
   }
 

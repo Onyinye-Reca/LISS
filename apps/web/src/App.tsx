@@ -31,6 +31,8 @@ import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
 import EventsAdminPage from "./pages/admin/EventsAdminPage";
 import FinancialsAdminPage from "./pages/admin/FinancialsAdminPage";
 import BlogAdminPage from "./pages/admin/BlogAdminPage";
+import ContactAdminPage from "./pages/admin/ContactAdminPage";
+import SettingsAdminPage from "./pages/admin/SettingsAdminPage";
 
 export default function App() {
   return (
@@ -85,6 +87,8 @@ export default function App() {
           <Route path="events" element={<EventsAdminPage />} />
           <Route path="financials" element={<FinancialsAdminPage />} />
           <Route path="blog" element={<BlogAdminPage />} />
+          <Route path="contact" element={<ContactAdminPage />} />
+          <Route path="settings" element={<SettingsAdminPage />} />
         </Route>
       </Route>
     </Routes>
