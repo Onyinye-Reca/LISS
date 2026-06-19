@@ -10,7 +10,7 @@ import {
 
 /**
  * Real email delivery via Resend (PRD section 8). Only constructed when
- * RESEND_API_KEY is set — see the binding in inversify.config.ts.
+ * RESEND_API_KEY is set. See the binding in inversify.config.ts.
  */
 @injectable()
 export class ResendEmailService implements EmailService {

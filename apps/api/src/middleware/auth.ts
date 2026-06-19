@@ -62,6 +62,42 @@ export async function requireAuth(
   }
 }
 
+/**
+ * Soft auth for pages that are public but render differently when logged in
+ * (e.g. public events: guests see public ones, members see all + their RSVP).
+ * Populates req.auth when a valid session exists; never rejects.
+ */
+export async function optionalAuth(
+  req: AuthedRequest,
+  _res: Response,
+  next: NextFunction,
+) {
+  const token = req.cookies?.token;
+  const secret = process.env.JWT_SECRET;
+  if (!token || !secret) return next();
+  try {
+    const payload = jwt.verify(token, secret) as {
+      sub: string;
+      role: Role;
+      ver?: number;
+    };
+    if (authLookup) {
+      const current = await authLookup(payload.sub);
+      if (
+        current &&
+        (typeof payload.ver !== "number" || payload.ver === current.tokenVersion)
+      ) {
+        req.auth = { memberId: payload.sub, role: current.role as Role };
+      }
+    } else {
+      req.auth = { memberId: payload.sub, role: payload.role };
+    }
+  } catch {
+    // Ignore invalid/expired tokens - treat as a guest.
+  }
+  next();
+}
+
 /** Server-side role gate. Use after requireAuth (PRD 4.14). */
 export function requireRole(...allowed: Role[]) {
   return (req: AuthedRequest, res: Response, next: NextFunction) => {

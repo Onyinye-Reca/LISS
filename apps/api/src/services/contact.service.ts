@@ -15,7 +15,7 @@ export class ContactService {
 
   /**
    * Persists the submission, then best-effort notifies the site inbox. Email
-   * failure does not fail the request — the message is already stored.
+   * failure does not fail the request. The message is already stored.
    */
   async submit(input: ContactInput): Promise<void> {
     await this.repo.create(input);
@@ -25,7 +25,7 @@ export class ContactService {
       try {
         await this.email.sendContactNotification(to, input);
       } catch (err) {
-        // Soft failure — the message is already stored. Report so ops sees it.
+        // Soft failure. The message is already stored. Report so ops sees it.
         captureError(err);
       }
     }

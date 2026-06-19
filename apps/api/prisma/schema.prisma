@@ -1,5 +1,5 @@
 // Prisma schema for the LISS11' alumni site.
-// Core tables only — enough to prove the migration workflow in Sprint 0.
+// Core tables only. Enough to prove the migration workflow in Sprint 0.
 // The votes table's INSERT-only rule is enforced by a DB trigger in
 // votes_immutability.sql (Prisma cannot express triggers/RLS).
 
@@ -41,6 +41,7 @@ model Member {
   payments            Payment[]
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
+  eventRsvps          EventRsvp[]
 
   @@map("members")
 }
@@ -160,4 +161,198 @@ model Payment {
   createdAt DateTime      @default(now())
 
   @@map("payments")
+}
+
+// --- Sprint 3: EXCOS / BOT / Regions content (PRD 4.3-4.5) ---
+
+enum OfficerTier {
+  PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  PRO
+  TREASURER
+  OTHER
+}
+
+// Executive committee officer (PRD 4.3).
+model Officer {
+  id        String      @id @default(uuid())
+  fullName  String
+  title     String // displayed role, e.g. "Financial Secretary"
+  tier      OfficerTier @default(OTHER) // for grouping/ordering
+  email     String
+  whatsapp  String?
+  termStart Int? // year, e.g. 2024
+  termEnd   Int? // year, e.g. 2026
+  photoUrl  String?
+  isPast    Boolean     @default(false) // past executives section
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("officers")
+}
+
+// Board of Trustees member (PRD 4.4).
+model BotMember {
+  id          String   @id @default(uuid())
+  fullName    String
+  designation String
+  bio         String?
+  email       String?
+  photoUrl    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bot_members")
+}
+
+enum RegionKey {
+  SOUTH_SOUTH
+  SOUTH_EAST
+  SOUTH_WEST
+  NORTH
+  DIASPORA
+}
+
+// One of the five fixed regions (PRD 4.5). Seeded; edited, not created/deleted.
+model Region {
+  id          String    @id @default(uuid())
+  key         RegionKey @unique
+  name        String
+  description String?
+  repName     String?
+  repEmail    String?
+  repWhatsapp String?
+  memberCount Int       @default(0)
+  updatedAt   DateTime  @updatedAt
+
+  @@map("regions")
+}
+
+// --- Sprint 4: Announcements + Gallery (PRD 4.6 / "Better Update") ---
+
+// News/update post shown in the announcements feed and the home preview.
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  body        String // long-form text (rendered with line breaks)
+  coverUrl    String? // optional banner image
+  publishedAt DateTime @default(now()) // the date shown; admin can backdate
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+// A gallery album groups photos from one event (PRD 4.6). Batch-uploaded.
+model Album {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  coverUrl    String? // falls back to the first image when null
+  eventDate   DateTime? // when the event happened
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  images      GalleryImage[]
+
+  @@map("albums")
+}
+
+// A single photo inside an album. Deleting the album removes its images.
+model GalleryImage {
+  id        String   @id @default(uuid())
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([albumId])
+  @@map("gallery_images")
+}
+
+// --- Sprint 5: Events + Financial Statements (members-only) ---
+
+// An alumni event (hangout, AGM, game night). Members can RSVP.
+model Event {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  coverUrl    String?
+  // Public events are visible to everyone (recruitment); members-only events
+  // are hidden from logged-out visitors. RSVP always requires login.
+  isPublic    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  rsvps       EventRsvp[]
+
+  @@index([startsAt])
+  @@map("events")
+}
+
+// A member's reservation for an event. Row present = attending; one per pair.
+model EventRsvp {
+  id        String   @id @default(uuid())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId  String
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, memberId])
+  @@index([eventId])
+  @@map("event_rsvps")
+}
+
+// Key-value store for editable site settings (e.g. hero video/poster URLs).
+// Small and generic so new settings don't need schema changes.
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+// A long-form blog article (distinct from short Announcements): public, with
+// an SEO-friendly slug, author, excerpt, and draft/publish support.
+model BlogPost {
+  id          String   @id @default(uuid())
+  slug        String   @unique // SEO-friendly URL segment, generated from title
+  title       String
+  excerpt     String? // short teaser for the list/preview
+  body        String // long-form content (rendered with line breaks)
+  coverUrl    String?
+  author      String
+  isPublished Boolean  @default(true) // drafts are hidden from the public
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+// A financial statement document (PRD: financial transparency). The file is a
+// private Cloudinary asset (or local-private in dev); never a public URL. Only
+// the storage reference is kept here - members download via a session-gated,
+// signed link (see FinancialController + StorageService.getDocumentUrl).
+model FinancialStatement {
+  id         String   @id @default(uuid())
+  title      String
+  period     String? // e.g. "2024" or "Q1 2024"
+  fileRef    String // storage reference: Cloudinary public_id, or local path
+  fileName   String? // original filename, for the download
+  uploadedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("financial_statements")
 }

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:4000";
+export const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:4000";
 
 let csrfToken: string | null = null;
 
@@ -26,7 +26,11 @@ export async function apiFetch(
     const headers = new Headers(options.headers);
     if (mutating) {
       headers.set("X-CSRF-Token", csrfToken ?? (await fetchCsrf()));
-      if (options.body && !headers.has("Content-Type")) {
+      // Let the browser set multipart boundaries for FormData; only default
+      // JSON for plain-body requests.
+      const isFormData =
+        typeof FormData !== "undefined" && options.body instanceof FormData;
+      if (options.body && !isFormData && !headers.has("Content-Type")) {
         headers.set("Content-Type", "application/json");
       }
     }

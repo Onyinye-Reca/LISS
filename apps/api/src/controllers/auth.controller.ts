@@ -33,7 +33,7 @@ export class AuthController {
     try {
       const { token, member } = await this.auth.login(req.body);
       res.cookie("token", token, {
-        httpOnly: true, // JS can't read it — kills the XSS token-theft vector
+        httpOnly: true, // JS can't read it. Kills the XSS token-theft vector
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
@@ -65,7 +65,7 @@ export class AuthController {
   async resendVerification(req: Request, res: Response) {
     try {
       await this.auth.resendVerification(req.body.email);
-      // Generic response — never reveal whether the email exists.
+      // Generic response. Never reveal whether the email exists.
       res.json({ ok: true, message: "If that account exists, a link has been sent." });
     } catch (err) {
       this.handle(err, res);
@@ -76,7 +76,7 @@ export class AuthController {
   async forgotPassword(req: Request, res: Response) {
     try {
       await this.auth.requestPasswordReset(req.body.email);
-      // Generic response — never reveal whether the email exists.
+      // Generic response. Never reveal whether the email exists.
       res.json({ ok: true, message: "If that account exists, a reset link has been sent." });
     } catch (err) {
       this.handle(err, res);
