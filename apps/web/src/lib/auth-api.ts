@@ -30,13 +30,14 @@ export async function login(email: string, password: string): Promise<MemberView
 }
 
 export async function register(
-  fullName: string,
+  firstName: string,
+  lastName: string,
   email: string,
   password: string,
 ): Promise<void> {
   const res = await apiFetch("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ fullName, email, password }),
+    body: JSON.stringify({ firstName, lastName, email, password }),
   });
   if (!res.ok) throw new Error(await errorMessage(res, "Registration failed"));
 }

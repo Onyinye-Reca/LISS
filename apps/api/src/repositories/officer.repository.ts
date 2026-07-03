@@ -13,7 +13,8 @@ export class OfficerRepository {
         { isPast: "asc" },
         { tier: "asc" },
         { sortOrder: "asc" },
-        { fullName: "asc" },
+        { lastName: "asc" },
+        { firstName: "asc" },
       ],
     });
   }

@@ -10,7 +10,8 @@ import { Button, TextField, TextArea, Alert } from "../../components/ui";
 import ImageUpload from "../../components/ImageUpload";
 
 type FormState = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   designation: string;
   bio: string;
   email: string;
@@ -19,7 +20,8 @@ type FormState = {
 };
 
 const blank: FormState = {
-  fullName: "",
+  firstName: "",
+  lastName: "",
   designation: "",
   bio: "",
   email: "",
@@ -29,7 +31,8 @@ const blank: FormState = {
 
 function toForm(b: BotMemberView): FormState {
   return {
-    fullName: b.fullName,
+    firstName: b.firstName,
+    lastName: b.lastName,
     designation: b.designation,
     bio: b.bio ?? "",
     email: b.email ?? "",
@@ -40,7 +43,8 @@ function toForm(b: BotMemberView): FormState {
 
 function toPayload(f: FormState): BotMemberCreateInput {
   return {
-    fullName: f.fullName,
+    firstName: f.firstName,
+    lastName: f.lastName,
     designation: f.designation,
     bio: f.bio || null,
     email: f.email || null,
@@ -79,7 +83,7 @@ export default function BotAdminPage() {
   };
 
   const remove = async (b: BotMemberView) => {
-    if (!confirm(`Remove ${b.fullName}?`)) return;
+    if (!confirm(`Remove ${b.firstName} ${b.lastName}?`)) return;
     try {
       await deleteBotMember(b.id);
       await refresh();
@@ -109,7 +113,8 @@ export default function BotAdminPage() {
           <h2 className="font-semibold text-maroon">{editing.id ? "Edit" : "New"} trustee</h2>
           <ImageUpload value={editing.form.photoUrl} folder="bot" onChange={(url) => set({ photoUrl: url })} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="Full name" required value={editing.form.fullName} onChange={(e) => set({ fullName: e.target.value })} />
+            <TextField label="First name" required value={editing.form.firstName} onChange={(e) => set({ firstName: e.target.value })} />
+            <TextField label="Last name" required value={editing.form.lastName} onChange={(e) => set({ lastName: e.target.value })} />
             <TextField label="Designation" required value={editing.form.designation} onChange={(e) => set({ designation: e.target.value })} />
             <TextField label="Email (optional)" type="email" value={editing.form.email} onChange={(e) => set({ email: e.target.value })} />
             <TextField label="Sort order" type="number" value={editing.form.sortOrder} onChange={(e) => set({ sortOrder: e.target.value })} />
@@ -137,7 +142,7 @@ export default function BotAdminPage() {
             <tbody>
               {members.map((b) => (
                 <tr key={b.id} className="border-t border-gold/10">
-                  <td className="px-4 py-2 font-medium text-nearblack">{b.fullName}</td>
+                  <td className="px-4 py-2 font-medium text-nearblack">{b.firstName} {b.lastName}</td>
                   <td className="px-4 py-2 text-ink/70">{b.designation}</td>
                   <td className="px-4 py-2 text-right">
                     <button onClick={() => setEditing({ id: b.id, form: toForm(b) })} className="mr-3 font-medium text-maroon hover:underline">Edit</button>

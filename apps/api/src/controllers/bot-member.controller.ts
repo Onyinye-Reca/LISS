@@ -17,7 +17,8 @@ import { captureError } from "../instrument";
 function toView(b: BotMember): BotMemberView {
   return {
     id: b.id,
-    fullName: b.fullName,
+    firstName: b.firstName,
+    lastName: b.lastName,
     designation: b.designation,
     bio: b.bio,
     email: b.email,

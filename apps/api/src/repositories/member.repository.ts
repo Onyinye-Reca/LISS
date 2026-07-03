@@ -19,7 +19,8 @@ export class MemberRepository {
   }
 
   create(data: {
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     passwordHash: string;
   }): Promise<Member> {

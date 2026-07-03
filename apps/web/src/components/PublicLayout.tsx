@@ -191,7 +191,7 @@ export default function PublicLayout() {
                   <div className="flex flex-col gap-1">
                     <span className="px-2 py-1 text-sm text-ink/60">
                       Signed in as{" "}
-                      <span className="font-semibold text-maroon">{member.fullName}</span>
+                      <span className="font-semibold text-maroon">{member.firstName} {member.lastName}</span>
                     </span>
                     {isAdmin && (
                       <Link to="/admin" onClick={closeMenu} className="px-2 py-3 font-medium text-maroon">

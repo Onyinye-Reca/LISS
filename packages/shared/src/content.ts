@@ -49,7 +49,8 @@ export const OFFICER_TIER_LABELS: Record<OfficerTier, string> = {
 };
 
 export const OfficerCreateSchema = z.object({
-  fullName: z.string().min(2).max(120),
+  firstName: z.string().min(1).max(60),
+  lastName: z.string().min(1).max(60),
   title: z.string().min(2).max(120),
   tier: z.enum(OFFICER_TIERS).default("OTHER"),
   email: z.string().email(),
@@ -66,7 +67,8 @@ export type OfficerUpdateInput = z.infer<typeof OfficerUpdateSchema>;
 
 export interface OfficerView {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   title: string;
   tier: OfficerTier;
   email: string;
@@ -80,7 +82,8 @@ export interface OfficerView {
 
 // --- Board of Trustees (PRD 4.4) ---
 export const BotMemberCreateSchema = z.object({
-  fullName: z.string().min(2).max(120),
+  firstName: z.string().min(1).max(60),
+  lastName: z.string().min(1).max(60),
   designation: z.string().min(2).max(120),
   bio: nullableStr(2000),
   email: nullableEmail,
@@ -93,7 +96,8 @@ export type BotMemberUpdateInput = z.infer<typeof BotMemberUpdateSchema>;
 
 export interface BotMemberView {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   designation: string;
   bio: string | null;
   email: string | null;

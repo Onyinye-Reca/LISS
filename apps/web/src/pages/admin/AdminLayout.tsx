@@ -55,7 +55,7 @@ export default function AdminLayout() {
           </Link>
           <div className="flex items-center gap-4 text-sm">
             <span className="text-ink/70">
-              {member?.fullName}{" "}
+              {member?.firstName} {member?.lastName}{" "}
               <span className="rounded bg-gold/20 px-2 py-0.5 text-xs font-semibold text-maroon">
                 {member?.role}
               </span>

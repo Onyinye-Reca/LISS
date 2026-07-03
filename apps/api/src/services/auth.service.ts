@@ -33,14 +33,16 @@ export class AuthService {
 
   private toView(m: {
     id: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     role: string;
     verified: boolean;
   }): MemberView {
     return {
       id: m.id,
-      fullName: m.fullName,
+      firstName: m.firstName,
+      lastName: m.lastName,
       email: m.email,
       role: m.role,
       verified: m.verified,
@@ -81,7 +83,8 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
     const member = await this.members.create({
-      fullName: input.fullName,
+      firstName: input.firstName,
+      lastName: input.lastName,
       email: input.email,
       passwordHash,
     });

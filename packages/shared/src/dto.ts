@@ -5,7 +5,8 @@ import { z } from "zod";
  * and both halves can share the inferred TypeScript types.
  */
 export const RegisterSchema = z.object({
-  fullName: z.string().min(2).max(120),
+  firstName: z.string().min(1).max(60),
+  lastName: z.string().min(1).max(60),
   email: z.string().email(),
   password: z.string().min(8).max(128),
 });
@@ -43,7 +44,8 @@ export type ContactInput = z.infer<typeof ContactSchema>;
 /** Shape returned to the client for the current member (never includes the password hash). */
 export interface MemberView {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
   verified: boolean;

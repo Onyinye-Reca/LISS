@@ -65,7 +65,7 @@ export default function ExcosPage() {
                     <PersonCard
                       key={o.id}
                       photoUrl={o.photoUrl}
-                      name={o.fullName}
+                      name={`${o.firstName} ${o.lastName}`}
                       subtitle={o.title}
                       note={term(o)}
                       email={o.email}
@@ -94,7 +94,7 @@ export default function ExcosPage() {
                 <PersonCard
                   key={o.id}
                   photoUrl={o.photoUrl}
-                  name={o.fullName}
+                  name={`${o.firstName} ${o.lastName}`}
                   subtitle={o.title}
                   note={term(o)}
                   email={o.email}
