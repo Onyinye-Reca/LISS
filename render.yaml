@@ -11,7 +11,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: WEB_ORIGIN
-        value: https://staging-liss11.netlify.app
+        value: https://liss11.netlify.app
       - key: COOKIE_SECURE
         value: "true"
       - key: JWT_SECRET
