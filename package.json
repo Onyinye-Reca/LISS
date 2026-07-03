@@ -10,7 +10,13 @@
     "build:shared": "npm run build --workspace @liss11/shared",
     "dev:api": "npm run dev --workspace @liss11/api",
     "dev:web": "npm run dev --workspace @liss11/web",
-    "build": "npm run build:shared && npm run build --workspace @liss11/api && npm run build --workspace @liss11/web",
+    "dev": "npm run dev:api & npm run dev:web",
+    "build:api": "npm run build --workspace @liss11/api",
+    "build:web": "npm run build --workspace @liss11/web",
+    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "db:generate": "npm run prisma:generate --workspace @liss11/api",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy --workspace @liss11/api",
+    "smoke:api": "node scripts/smoke-api.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "engines": {
