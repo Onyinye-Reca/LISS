@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { randomBytes, timingSafeEqual } from "crypto";
-import { shouldUseSecureCookies } from "../config/cookies";
+import { shouldUseSecureCookies, cookieSameSite } from "../config/cookies";
 
 /**
  * Double-submit-cookie CSRF protection (PRD 7.2). Required because auth is
@@ -11,7 +11,11 @@ import { shouldUseSecureCookies } from "../config/cookies";
  * The client echoes the value in the X-CSRF-Token header on every mutating
  * request; the server checks that header == cookie. A cross-site attacker
  * can ride the cookie but cannot read the value to set the header.
- * SameSite=Lax on both cookies is the second layer.
+ *
+ * The double-submit check is the primary defense. SameSite adds a second
+ * layer when it can: Lax for same-site (local dev), but None in cross-site
+ * deployments (web on *.netlify.app, API on *.onrender.com) where the cookie
+ * must cross sites to reach the API at all - there the token check carries it.
  */
 export const CSRF_COOKIE = "csrf";
 const CSRF_HEADER = "x-csrf-token";
@@ -26,7 +30,7 @@ export function issueCsrfToken(res: Response): string {
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false, // readable by the client so it can echo it in the header
     secure: shouldUseSecureCookies(),
-    sameSite: "lax",
+    sameSite: cookieSameSite(),
     path: "/",
   });
   return token;
