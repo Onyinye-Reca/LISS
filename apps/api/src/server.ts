@@ -12,6 +12,7 @@ import { TYPES } from "./types";
 import { MemberRepository } from "./repositories/member.repository";
 import { configureAuthLookup } from "./middleware/auth";
 import { attachSentryErrorHandler } from "./instrument";
+import { buildOriginAllowlist } from "./config/cors";
 
 import { requireCsrf } from "./middleware/csrf";
 
@@ -33,6 +34,7 @@ import "./controllers/site-setting.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+const isAllowedOrigin = buildOriginAllowlist(WEB_ORIGIN);
 
 const container = buildContainer();
 
@@ -47,7 +49,9 @@ server.setConfig((app) => {
   app.use(helmet());
   app.use(
     cors({
-      origin: WEB_ORIGIN, // exact origin, never "*" with credentials
+      // Exact WEB_ORIGIN plus this Netlify site's deploy-preview/branch-deploy
+      // origins; never "*" with credentials. See config/cors.ts.
+      origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
       credentials: true,
     }),
   );
