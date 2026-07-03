@@ -8,6 +8,13 @@
 [context.production.environment]
   VITE_API_BASE = "https://api.liss11.org"
 
+# The staging Netlify site deploys the `dev` branch as its "production" branch,
+# so it would otherwise pick up the production API URL above. A branch-named
+# context overrides [context.production] for dev deploys, pointing staging web
+# at the staging API instead.
+[context.dev.environment]
+  VITE_API_BASE = "https://liss11-api-staging.onrender.com"
+
 [context.deploy-preview.environment]
   VITE_API_BASE = "https://liss11-api-staging.onrender.com"
 
