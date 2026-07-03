@@ -13,6 +13,7 @@ import { AuthService, AuthError } from "../services/auth.service";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
 import { captureError } from "../instrument";
+import { shouldUseSecureCookies } from "../config/cookies";
 
 @controller("/auth")
 export class AuthController {
@@ -34,7 +35,7 @@ export class AuthController {
       const { token, member } = await this.auth.login(req.body);
       res.cookie("token", token, {
         httpOnly: true, // JS can't read it. Kills the XSS token-theft vector
-        secure: process.env.NODE_ENV === "production",
+        secure: shouldUseSecureCookies(),
         sameSite: "lax",
         path: "/",
         maxAge: this.auth.tokenTtlMs,

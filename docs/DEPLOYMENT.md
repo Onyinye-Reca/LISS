@@ -148,7 +148,7 @@ Deploy `apps/api` as a Node service.
 Build command:
 
 ```bash
-npm install
+npm ci --include=dev
 npm run build:shared
 npm run build:api
 npm run db:migrate:deploy
