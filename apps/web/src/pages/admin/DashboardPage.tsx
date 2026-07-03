@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-maroon">Dashboard</h1>
         <p className="mt-1 text-sm text-ink/60">
-          Welcome, {member?.fullName}. Manage site content from the modules below.
+          Welcome, {member?.firstName} {member?.lastName}. Manage site content from the modules below.
         </p>
       </div>
 

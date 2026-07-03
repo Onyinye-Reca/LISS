@@ -54,7 +54,7 @@ export default function BlogAdminPage() {
 
   const blank: FormState = {
     title: "",
-    author: member?.fullName ?? "",
+    author: member ? `${member.firstName} ${member.lastName}` : "",
     excerpt: "",
     body: "",
     coverUrl: null,

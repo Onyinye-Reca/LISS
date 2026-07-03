@@ -2,6 +2,8 @@
 // Core tables only. Enough to prove the migration workflow in Sprint 0.
 // The votes table's INSERT-only rule is enforced by a DB trigger in
 // votes_immutability.sql (Prisma cannot express triggers/RLS).
+//
+// Convention: camelCase Prisma/TS fields, snake_case DB columns (via @map).
 
 generator client {
   provider = "prisma-client-js"
@@ -22,9 +24,10 @@ enum Role {
 
 model Member {
   id           String    @id @default(uuid())
-  fullName     String
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
   email        String    @unique
-  passwordHash String
+  passwordHash String    @map("password_hash")
   role         Role      @default(MEMBER)
   verified     Boolean   @default(false)
   // Toggle for the PRD section 11 "registration approval" decision.
@@ -33,9 +36,9 @@ model Member {
   approved     Boolean   @default(true)
   // Bumped whenever credentials change (e.g. password reset). Embedded in the
   // JWT as `ver`; a mismatch invalidates outstanding sessions.
-  tokenVersion Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  tokenVersion Int       @default(0) @map("token_version")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   votes               Vote[]
   payments            Payment[]
@@ -50,11 +53,11 @@ model Member {
 // the raw token lives only in the emailed link.
 model VerificationToken {
   id        String   @id @default(uuid())
-  tokenHash String   @unique
+  tokenHash String   @unique @map("token_hash")
   member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  memberId  String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  memberId  String   @map("member_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("verification_tokens")
 }
@@ -62,11 +65,11 @@ model VerificationToken {
 // Single-use password-reset tokens. SHA-256 hash only; short-lived (1h).
 model PasswordResetToken {
   id        String   @id @default(uuid())
-  tokenHash String   @unique
+  tokenHash String   @unique @map("token_hash")
   member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  memberId  String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  memberId  String   @map("member_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("password_reset_tokens")
 }
@@ -74,10 +77,10 @@ model PasswordResetToken {
 model Election {
   id        String     @id @default(uuid())
   title     String
-  isOpen    Boolean    @default(false)
-  opensAt   DateTime?
-  closesAt  DateTime?
-  createdAt DateTime   @default(now())
+  isOpen    Boolean    @default(false) @map("is_open")
+  opensAt   DateTime?  @map("opens_at")
+  closesAt  DateTime?  @map("closes_at")
+  createdAt DateTime   @default(now()) @map("created_at")
 
   positions Position[]
   votes     Vote[]
@@ -89,7 +92,7 @@ model Position {
   id         String      @id @default(uuid())
   title      String
   election   Election    @relation(fields: [electionId], references: [id])
-  electionId String
+  electionId String      @map("election_id")
 
   candidates Candidate[]
   votes      Vote[]
@@ -102,9 +105,9 @@ model Candidate {
   name       String
   manifesto  String?
   position   Position @relation(fields: [positionId], references: [id])
-  positionId String
+  positionId String   @map("position_id")
 
-  votes      Vote[]
+  votes Vote[]
 
   @@map("candidates")
 }
@@ -114,14 +117,14 @@ model Candidate {
 model Vote {
   id          String    @id @default(uuid())
   member      Member    @relation(fields: [memberId], references: [id])
-  memberId    String
+  memberId    String    @map("member_id")
   election    Election  @relation(fields: [electionId], references: [id])
-  electionId  String
+  electionId  String    @map("election_id")
   position    Position  @relation(fields: [positionId], references: [id])
-  positionId  String
+  positionId  String    @map("position_id")
   candidate   Candidate @relation(fields: [candidateId], references: [id])
-  candidateId String
-  castAt      DateTime  @default(now())
+  candidateId String    @map("candidate_id")
+  castAt      DateTime  @default(now()) @map("cast_at")
 
   @@unique([memberId, positionId])
   @@map("votes")
@@ -134,7 +137,7 @@ model ContactMessage {
   name      String
   email     String
   message   String
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contact_messages")
 }
@@ -153,12 +156,12 @@ enum PaymentStatus {
 model Payment {
   id        String        @id @default(uuid())
   member    Member        @relation(fields: [memberId], references: [id])
-  memberId  String
+  memberId  String        @map("member_id")
   type      PaymentType
   amount    Int // kobo (smallest currency unit), per Paystack convention
   reference String        @unique
   status    PaymentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
+  createdAt DateTime      @default(now()) @map("created_at")
 
   @@map("payments")
 }
@@ -177,18 +180,19 @@ enum OfficerTier {
 // Executive committee officer (PRD 4.3).
 model Officer {
   id        String      @id @default(uuid())
-  fullName  String
+  firstName String      @map("first_name")
+  lastName  String      @map("last_name")
   title     String // displayed role, e.g. "Financial Secretary"
   tier      OfficerTier @default(OTHER) // for grouping/ordering
   email     String
   whatsapp  String?
-  termStart Int? // year, e.g. 2024
-  termEnd   Int? // year, e.g. 2026
-  photoUrl  String?
-  isPast    Boolean     @default(false) // past executives section
-  sortOrder Int         @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  termStart Int?        @map("term_start") // year, e.g. 2024
+  termEnd   Int?        @map("term_end") // year, e.g. 2026
+  photoUrl  String?     @map("photo_url")
+  isPast    Boolean     @default(false) @map("is_past") // past executives section
+  sortOrder Int         @default(0) @map("sort_order")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
 
   @@map("officers")
 }
@@ -196,14 +200,15 @@ model Officer {
 // Board of Trustees member (PRD 4.4).
 model BotMember {
   id          String   @id @default(uuid())
-  fullName    String
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
   designation String
   bio         String?
   email       String?
-  photoUrl    String?
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  photoUrl    String?  @map("photo_url")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("bot_members")
 }
@@ -222,11 +227,11 @@ model Region {
   key         RegionKey @unique
   name        String
   description String?
-  repName     String?
-  repEmail    String?
-  repWhatsapp String?
-  memberCount Int       @default(0)
-  updatedAt   DateTime  @updatedAt
+  repName     String?   @map("rep_name")
+  repEmail    String?   @map("rep_email")
+  repWhatsapp String?   @map("rep_whatsapp")
+  memberCount Int       @default(0) @map("member_count")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("regions")
 }
@@ -238,10 +243,10 @@ model Announcement {
   id          String   @id @default(uuid())
   title       String
   body        String // long-form text (rendered with line breaks)
-  coverUrl    String? // optional banner image
-  publishedAt DateTime @default(now()) // the date shown; admin can backdate
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  coverUrl    String?  @map("cover_url") // optional banner image
+  publishedAt DateTime @default(now()) @map("published_at") // the date shown; admin can backdate
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("announcements")
 }
@@ -251,11 +256,11 @@ model Album {
   id          String         @id @default(uuid())
   title       String
   description String?
-  coverUrl    String? // falls back to the first image when null
-  eventDate   DateTime? // when the event happened
-  sortOrder   Int            @default(0)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  coverUrl    String?        @map("cover_url") // falls back to the first image when null
+  eventDate   DateTime?      @map("event_date") // when the event happened
+  sortOrder   Int            @default(0) @map("sort_order")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
   images      GalleryImage[]
 
   @@map("albums")
@@ -265,11 +270,11 @@ model Album {
 model GalleryImage {
   id        String   @id @default(uuid())
   album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  albumId   String
+  albumId   String   @map("album_id")
   url       String
   caption   String?
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([albumId])
   @@map("gallery_images")
@@ -283,14 +288,14 @@ model Event {
   title       String
   description String?
   location    String?
-  startsAt    DateTime
-  endsAt      DateTime?
-  coverUrl    String?
+  startsAt    DateTime    @map("starts_at")
+  endsAt      DateTime?   @map("ends_at")
+  coverUrl    String?     @map("cover_url")
   // Public events are visible to everyone (recruitment); members-only events
   // are hidden from logged-out visitors. RSVP always requires login.
-  isPublic    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  isPublic    Boolean     @default(true) @map("is_public")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
   rsvps       EventRsvp[]
 
   @@index([startsAt])
@@ -301,10 +306,10 @@ model Event {
 model EventRsvp {
   id        String   @id @default(uuid())
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId   String
+  eventId   String   @map("event_id")
   member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  memberId  String
-  createdAt DateTime @default(now())
+  memberId  String   @map("member_id")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([eventId, memberId])
   @@index([eventId])
@@ -316,7 +321,7 @@ model EventRsvp {
 model SiteSetting {
   key       String   @id
   value     String
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
 }
@@ -329,12 +334,12 @@ model BlogPost {
   title       String
   excerpt     String? // short teaser for the list/preview
   body        String // long-form content (rendered with line breaks)
-  coverUrl    String?
+  coverUrl    String?  @map("cover_url")
   author      String
-  isPublished Boolean  @default(true) // drafts are hidden from the public
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPublished Boolean  @default(true) @map("is_published") // drafts are hidden from the public
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@index([publishedAt])
   @@map("blog_posts")
@@ -348,11 +353,11 @@ model FinancialStatement {
   id         String   @id @default(uuid())
   title      String
   period     String? // e.g. "2024" or "Q1 2024"
-  fileRef    String // storage reference: Cloudinary public_id, or local path
-  fileName   String? // original filename, for the download
-  uploadedAt DateTime @default(now())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  fileRef    String   @map("file_ref") // storage reference: Cloudinary public_id, or local path
+  fileName   String?  @map("file_name") // original filename, for the download
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("financial_statements")
 }

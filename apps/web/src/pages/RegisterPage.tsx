@@ -4,7 +4,8 @@ import { register } from "../lib/auth-api";
 import { AuthShell, TextField, Button, Alert } from "../components/ui";
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     setError(null);
     setBusy(true);
     try {
-      await register(fullName, email, password);
+      await register(firstName, lastName, email, password);
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -59,11 +60,18 @@ export default function RegisterPage() {
       <form onSubmit={onSubmit} className="space-y-4">
         {error && <Alert>{error}</Alert>}
         <TextField
-          label="Full name"
-          autoComplete="name"
+          label="First name"
+          autoComplete="given-name"
           required
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+        <TextField
+          label="Last name"
+          autoComplete="family-name"
+          required
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
         />
         <TextField
           label="Email"

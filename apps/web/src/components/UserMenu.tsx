@@ -29,7 +29,7 @@ export default function UserMenu() {
 
   if (!member) return null;
   const isAdmin = ADMIN_PANEL_ROLES.includes(member.role as Role);
-  const initial = member.fullName.trim().charAt(0).toUpperCase();
+  const initial = member.firstName.trim().charAt(0).toUpperCase();
 
   return (
     <div className="relative" ref={ref}>
@@ -38,8 +38,8 @@ export default function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Account menu for ${member.fullName}`}
-        title={member.fullName}
+        aria-label={`Account menu for ${member.firstName} ${member.lastName}`}
+        title={`${member.firstName} ${member.lastName}`}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-maroon text-sm font-semibold text-white ring-offset-2 ring-offset-cream transition hover:bg-maroon-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       >
         {initial}
@@ -53,7 +53,7 @@ export default function UserMenu() {
           <div className="px-4 py-2">
             <div className="text-xs text-ink/50">Signed in as</div>
             <div className="truncate text-sm font-semibold text-maroon">
-              {member.fullName}
+              {member.firstName} {member.lastName}
             </div>
           </div>
           <div className="my-1 border-t border-gold/10" />

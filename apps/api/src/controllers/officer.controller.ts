@@ -18,7 +18,8 @@ import { captureError } from "../instrument";
 function toView(o: Officer): OfficerView {
   return {
     id: o.id,
-    fullName: o.fullName,
+    firstName: o.firstName,
+    lastName: o.lastName,
     title: o.title,
     tier: o.tier as OfficerTier,
     email: o.email,

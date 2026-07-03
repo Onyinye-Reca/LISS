@@ -6,23 +6,36 @@
   NODE_VERSION = "20"
 
 [context.production.environment]
+  # Production web (liss11.org) and API (api.liss11.org) share a registrable
+  # domain, so cookies are already first-party (same-site) - no proxy needed.
   VITE_API_BASE = "https://api.liss11.org"
 
-# The staging Netlify site deploys the `dev` branch as its "production" branch,
-# so it would otherwise pick up the production API URL above. A branch-named
-# context overrides [context.production] for dev deploys, pointing staging web
-# at the staging API instead.
+# Staging: the web talks to the API under its OWN origin ("/api/*"), which
+# Netlify proxies to the onrender API (see the redirect below). This keeps the
+# auth + CSRF cookies FIRST-PARTY for the netlify.app domain, so browsers that
+# block third-party cookies (Safari/iOS, incognito, Brave) can still log in.
+# The staging Netlify site deploys the `dev` branch as its production branch,
+# hence the branch-named context.
 [context.dev.environment]
-  VITE_API_BASE = "https://liss11-api-staging.onrender.com"
+  VITE_API_BASE = "/api"
 
 [context.deploy-preview.environment]
-  VITE_API_BASE = "https://liss11-api-staging.onrender.com"
+  VITE_API_BASE = "/api"
 
 [context.branch-deploy.environment]
-  VITE_API_BASE = "https://liss11-api-staging.onrender.com"
+  VITE_API_BASE = "/api"
 
 [context.staging.environment]
-  VITE_API_BASE = "https://liss11-api-staging.onrender.com"
+  VITE_API_BASE = "/api"
+
+# Proxy the staging API under the web origin so its cookies are first-party.
+# MUST precede the SPA catch-all. Only staging uses "/api"; production calls
+# api.liss11.org directly, so this rule is a no-op in production.
+[[redirects]]
+  from = "/api/*"
+  to = "https://liss11-api-staging.onrender.com/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

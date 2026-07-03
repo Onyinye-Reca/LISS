@@ -8,7 +8,7 @@ export class BotMemberRepository {
 
   list(): Promise<BotMember[]> {
     return this.prisma.botMember.findMany({
-      orderBy: [{ sortOrder: "asc" }, { fullName: "asc" }],
+      orderBy: [{ sortOrder: "asc" }, { lastName: "asc" }, { firstName: "asc" }],
     });
   }
 

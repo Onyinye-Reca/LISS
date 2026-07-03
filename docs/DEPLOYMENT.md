@@ -166,10 +166,20 @@ Production environment variables:
 NODE_ENV=production
 PORT=4000
 WEB_ORIGIN=https://liss11.org
+API_BASE_URL=https://api.liss11.org
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
 JWT_SECRET=replace-with-a-long-random-secret
 COOKIE_SECURE=true
 SENTRY_DSN=
+
+# Email: production sends from lissclass11@gmail.com via Gmail SMTP.
+# SMTP_PASS is a Google App Password for that account (2-Step Verification
+# required), not the login password. Staging uses emove.nig@gmail.com instead.
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=lissclass11@gmail.com
+SMTP_PASS=replace-with-lissclass11-app-password
+EMAIL_FROM=LISS11' Alumni <lissclass11@gmail.com>
 ```
 
 Use `prisma migrate deploy` in production. Do not use `prisma migrate dev` against the production database.

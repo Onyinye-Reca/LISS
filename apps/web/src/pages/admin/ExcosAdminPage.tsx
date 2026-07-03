@@ -15,7 +15,8 @@ import { Button, TextField, SelectField, Alert } from "../../components/ui";
 import ImageUpload from "../../components/ImageUpload";
 
 type FormState = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   title: string;
   tier: OfficerView["tier"];
   email: string;
@@ -28,7 +29,8 @@ type FormState = {
 };
 
 const blank: FormState = {
-  fullName: "",
+  firstName: "",
+  lastName: "",
   title: "",
   tier: "OTHER",
   email: "",
@@ -42,7 +44,8 @@ const blank: FormState = {
 
 function toForm(o: OfficerView): FormState {
   return {
-    fullName: o.fullName,
+    firstName: o.firstName,
+    lastName: o.lastName,
     title: o.title,
     tier: o.tier,
     email: o.email,
@@ -57,7 +60,8 @@ function toForm(o: OfficerView): FormState {
 
 function toPayload(f: FormState): OfficerCreateInput {
   return {
-    fullName: f.fullName,
+    firstName: f.firstName,
+    lastName: f.lastName,
     title: f.title,
     tier: f.tier,
     email: f.email,
@@ -100,7 +104,7 @@ export default function ExcosAdminPage() {
   };
 
   const remove = async (o: OfficerView) => {
-    if (!confirm(`Remove ${o.fullName}?`)) return;
+    if (!confirm(`Remove ${o.firstName} ${o.lastName}?`)) return;
     try {
       await deleteOfficer(o.id);
       await refresh();
@@ -134,7 +138,8 @@ export default function ExcosAdminPage() {
             onChange={(url) => set({ photoUrl: url })}
           />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="Full name" required value={editing.form.fullName} onChange={(e) => set({ fullName: e.target.value })} />
+            <TextField label="First name" required value={editing.form.firstName} onChange={(e) => set({ firstName: e.target.value })} />
+            <TextField label="Last name" required value={editing.form.lastName} onChange={(e) => set({ lastName: e.target.value })} />
             <TextField label="Title" required value={editing.form.title} onChange={(e) => set({ title: e.target.value })} />
             <SelectField label="Tier" value={editing.form.tier} onChange={(e) => set({ tier: e.target.value as FormState["tier"] })}>
               {OFFICER_TIERS.map((t) => (
@@ -175,7 +180,7 @@ export default function ExcosAdminPage() {
               {officers.map((o) => (
                 <tr key={o.id} className="border-t border-gold/10">
                   <td className="px-4 py-2 font-medium text-nearblack">
-                    {o.fullName} {o.isPast && <span className="text-xs text-ink/40">(past)</span>}
+                    {o.firstName} {o.lastName} {o.isPast && <span className="text-xs text-ink/40">(past)</span>}
                   </td>
                   <td className="px-4 py-2 text-ink/70">{o.title}</td>
                   <td className="px-4 py-2 text-ink/60">{OFFICER_TIER_LABELS[o.tier]}</td>

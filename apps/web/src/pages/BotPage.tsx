@@ -42,7 +42,7 @@ export default function BotPage() {
             <PersonCard
               key={m.id}
               photoUrl={m.photoUrl}
-              name={m.fullName}
+              name={`${m.firstName} ${m.lastName}`}
               subtitle={m.designation}
               bio={m.bio}
               email={m.email}
