@@ -3,7 +3,7 @@ services:
     name: liss11-api-staging
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build:shared && npm run db:generate && npm run build:api
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run db:generate && npm run build:api
     preDeployCommand: npm run db:migrate:deploy
     startCommand: npm run start --workspace apps/api
     healthCheckPath: /health/

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { randomBytes, timingSafeEqual } from "crypto";
+import { shouldUseSecureCookies } from "../config/cookies";
 
 /**
  * Double-submit-cookie CSRF protection (PRD 7.2). Required because auth is
@@ -24,7 +25,7 @@ export function issueCsrfToken(res: Response): string {
   const token = randomBytes(32).toString("hex");
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false, // readable by the client so it can echo it in the header
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies(),
     sameSite: "lax",
     path: "/",
   });
