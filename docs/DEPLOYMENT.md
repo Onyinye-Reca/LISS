@@ -20,7 +20,7 @@ This keeps the current Express server model intact and avoids reshaping the API 
 
 Yes: before production, create a staging environment that mirrors production but uses separate resources.
 
-- Staging web: Netlify deploy preview, branch deploy, or a separate Netlify site such as `staging-liss11.netlify.app`
+- Staging web: Netlify deploy preview, branch deploy, or a separate Netlify site such as `liss11.netlify.app`
 - Staging API: separate service such as `liss11-api-staging`
 - Staging database: separate Supabase/Neon Postgres database
 - Production web: `https://liss11.org`
@@ -32,7 +32,7 @@ Never point staging at the production database. The whole point is to test migra
 Suggested staging URLs:
 
 ```bash
-WEB_ORIGIN=https://staging-liss11.netlify.app
+WEB_ORIGIN=https://liss11.netlify.app
 VITE_API_BASE=https://api-staging.liss11.org
 ```
 
