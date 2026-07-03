@@ -13,7 +13,7 @@ import { AuthService, AuthError } from "../services/auth.service";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
 import { captureError } from "../instrument";
-import { shouldUseSecureCookies } from "../config/cookies";
+import { shouldUseSecureCookies, cookieSameSite } from "../config/cookies";
 
 @controller("/auth")
 export class AuthController {
@@ -36,7 +36,7 @@ export class AuthController {
       res.cookie("token", token, {
         httpOnly: true, // JS can't read it. Kills the XSS token-theft vector
         secure: shouldUseSecureCookies(),
-        sameSite: "lax",
+        sameSite: cookieSameSite(),
         path: "/",
         maxAge: this.auth.tokenTtlMs,
       });
@@ -90,7 +90,11 @@ export class AuthController {
       await this.auth.resetPassword(req.body.token, req.body.password);
       // Clear any cookie on this client; other sessions are invalidated by
       // the tokenVersion bump.
-      res.clearCookie("token", { path: "/" });
+      res.clearCookie("token", {
+        path: "/",
+        secure: shouldUseSecureCookies(),
+        sameSite: cookieSameSite(),
+      });
       res.json({ ok: true, message: "Password updated. Please log in." });
     } catch (err) {
       this.handle(err, res);
@@ -99,7 +103,11 @@ export class AuthController {
 
   @httpPost("/logout")
   logout(_req: Request, res: Response) {
-    res.clearCookie("token", { path: "/" });
+    res.clearCookie("token", {
+      path: "/",
+      secure: shouldUseSecureCookies(),
+      sameSite: cookieSameSite(),
+    });
     res.json({ ok: true });
   }
 
