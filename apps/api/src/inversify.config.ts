@@ -18,6 +18,7 @@ import { AuthService } from "./services/auth.service";
 import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
 import { ResendEmailService } from "./services/resend-email.service";
+import { SmtpEmailService } from "./services/smtp-email.service";
 import {
   CloudinaryStorageService,
   LocalStorageService,
@@ -55,14 +56,18 @@ export function buildContainer(): Container {
 
   // Use real email when configured; otherwise log links to the console so
   // local dev needs no credentials (PRD section 8 + Group C plan).
-  if (process.env.RESEND_API_KEY) {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    container.bind(TYPES.EmailService).to(SmtpEmailService);
+    // eslint-disable-next-line no-console
+    console.log(`[email] using SMTP (${process.env.SMTP_HOST})`);
+  } else if (process.env.RESEND_API_KEY) {
     container.bind(TYPES.EmailService).to(ResendEmailService);
     // eslint-disable-next-line no-console
     console.log("[email] using Resend");
   } else {
     container.bind(TYPES.EmailService).to(ConsoleEmailService);
     // eslint-disable-next-line no-console
-    console.log("[email] RESEND_API_KEY not set - logging links to console");
+    console.log("[email] no email provider set - logging links to console");
   }
 
   // Real media uploads via Cloudinary when configured; otherwise local disk.
