@@ -18,4 +18,7 @@ export const TYPES = {
   ContactService: Symbol.for("ContactService"),
   EmailService: Symbol.for("EmailService"),
   StorageService: Symbol.for("StorageService"),
+  PaymentRepository: Symbol.for("PaymentRepository"),
+  PaystackService: Symbol.for("PaystackService"),
+  PaymentService: Symbol.for("PaymentService"),
 } as const;

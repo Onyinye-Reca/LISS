@@ -97,3 +97,22 @@ export function passwordResetEmail(resetUrl: string): EmailContent {
     text: `Reset your LISS11' Alumni password (link expires in 1 hour):\n${resetUrl}\n\nIf you didn't request this, ignore this email.`,
   };
 }
+
+export function paymentReceiptEmail(r: {
+  typeLabel: string;
+  amountNaira: number;
+  reference: string;
+  dateLabel: string;
+  viewUrl: string;
+}): EmailContent {
+  const body =
+    `Thank you - we've received your ${escapeHtml(r.typeLabel.toLowerCase())}.<br/><br/>` +
+    `<strong>Amount:</strong> &#8358;${r.amountNaira.toLocaleString()}<br/>` +
+    `<strong>Reference:</strong> ${escapeHtml(r.reference)}<br/>` +
+    `<strong>Date:</strong> ${escapeHtml(r.dateLabel)}`;
+  return {
+    subject: `Your LISS11' Alumni ${r.typeLabel.toLowerCase()} receipt`,
+    html: layout("Payment received", body, "View my payments", r.viewUrl),
+    text: `Payment received - ${r.typeLabel}\nAmount: N${r.amountNaira}\nReference: ${r.reference}\nDate: ${r.dateLabel}\n\nView your payments: ${r.viewUrl}`,
+  };
+}
