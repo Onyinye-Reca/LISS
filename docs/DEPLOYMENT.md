@@ -180,6 +180,9 @@ SMTP_PORT=465
 SMTP_USER=lissclass11@gmail.com
 SMTP_PASS=replace-with-lissclass11-app-password
 EMAIL_FROM=LISS11' Alumni <lissclass11@gmail.com>
+
+# Inbox that receives contact-form notifications (production).
+CONTACT_TO=lissclass11@gmail.com
 ```
 
 Use `prisma migrate deploy` in production. Do not use `prisma migrate dev` against the production database.

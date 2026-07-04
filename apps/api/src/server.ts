@@ -31,6 +31,7 @@ import "./controllers/event.controller";
 import "./controllers/financial-statement.controller";
 import "./controllers/blog-post.controller";
 import "./controllers/site-setting.controller";
+import "./controllers/payment.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
@@ -55,7 +56,15 @@ server.setConfig((app) => {
       credentials: true,
     }),
   );
-  app.use(express.json());
+  // Capture the raw body so the Paystack webhook can verify its HMAC signature
+  // (the parsed body isn't byte-identical to what was signed).
+  app.use(
+    express.json({
+      verify: (req, _res, buf) => {
+        (req as unknown as { rawBody?: Buffer }).rawBody = buf;
+      },
+    }),
+  );
   app.use(cookieParser());
 
   // Serve locally-stored uploads (no-op when Cloudinary is used). GET only.

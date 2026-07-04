@@ -1,10 +1,15 @@
 import { injectable } from "inversify";
 import nodemailer from "nodemailer";
-import type { EmailService, ContactSubmission } from "./email.service";
+import type {
+  EmailService,
+  ContactSubmission,
+  PaymentReceipt,
+} from "./email.service";
 import {
   verificationEmail,
   passwordResetEmail,
   contactNotificationEmail,
+  paymentReceiptEmail,
   EmailContent,
 } from "./email-templates";
 
@@ -72,5 +77,9 @@ export class SmtpEmailService implements EmailService {
   ): Promise<void> {
     // Reply-to the submitter so the inbox owner can respond directly.
     return this.send(to, contactNotificationEmail(submission), submission.email);
+  }
+
+  sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void> {
+    return this.send(to, paymentReceiptEmail(receipt));
   }
 }

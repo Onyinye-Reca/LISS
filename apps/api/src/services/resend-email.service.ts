@@ -1,10 +1,15 @@
 import { injectable } from "inversify";
 import { Resend } from "resend";
-import type { EmailService, ContactSubmission } from "./email.service";
+import type {
+  EmailService,
+  ContactSubmission,
+  PaymentReceipt,
+} from "./email.service";
 import {
   verificationEmail,
   passwordResetEmail,
   contactNotificationEmail,
+  paymentReceiptEmail,
   EmailContent,
 } from "./email-templates";
 
@@ -54,5 +59,9 @@ export class ResendEmailService implements EmailService {
   sendContactNotification(to: string, submission: ContactSubmission): Promise<void> {
     // Reply-to the submitter so the inbox owner can respond directly.
     return this.send(to, contactNotificationEmail(submission), submission.email);
+  }
+
+  sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void> {
+    return this.send(to, paymentReceiptEmail(receipt));
   }
 }

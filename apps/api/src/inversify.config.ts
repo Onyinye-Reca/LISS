@@ -23,6 +23,9 @@ import {
   CloudinaryStorageService,
   LocalStorageService,
 } from "./services/storage.service";
+import { PaymentRepository } from "./repositories/payment.repository";
+import { PaystackService } from "./services/paystack.service";
+import { PaymentService } from "./services/payment.service";
 
 export function buildContainer(): Container {
   const container = new Container();
@@ -53,6 +56,9 @@ export function buildContainer(): Container {
   container.bind(TYPES.SiteSettingRepository).to(SiteSettingRepository);
   container.bind(TYPES.AuthService).to(AuthService);
   container.bind(TYPES.ContactService).to(ContactService);
+  container.bind(TYPES.PaymentRepository).to(PaymentRepository);
+  container.bind(TYPES.PaystackService).to(PaystackService);
+  container.bind(TYPES.PaymentService).to(PaymentService);
 
   // Use real email when configured; otherwise log links to the console so
   // local dev needs no credentials (PRD section 8 + Group C plan).

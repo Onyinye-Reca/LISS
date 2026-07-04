@@ -6,6 +6,14 @@ export interface ContactSubmission {
   message: string;
 }
 
+export interface PaymentReceipt {
+  typeLabel: string; // e.g. "Dues payment" / "Donation"
+  amountNaira: number;
+  reference: string;
+  dateLabel: string;
+  viewUrl: string;
+}
+
 export interface EmailService {
   /** Sends the verification email. `verifyUrl` is the fully-composed link. */
   sendVerification(to: string, verifyUrl: string): Promise<void>;
@@ -13,6 +21,8 @@ export interface EmailService {
   sendPasswordReset(to: string, resetUrl: string): Promise<void>;
   /** Notifies the site inbox of a new contact-form submission. */
   sendContactNotification(to: string, submission: ContactSubmission): Promise<void>;
+  /** Sends a receipt after a settled Paystack charge (dues or donation). */
+  sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void>;
 }
 
 /**
@@ -39,6 +49,13 @@ export class ConsoleEmailService implements EmailService {
     // eslint-disable-next-line no-console
     console.log(
       `[email] contact -> ${to} from ${submission.name} <${submission.email}>: ${submission.message}`,
+    );
+  }
+
+  async sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[email] receipt ${to} -> N${receipt.amountNaira} ${receipt.typeLabel} (${receipt.reference})`,
     );
   }
 }

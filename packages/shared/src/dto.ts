@@ -50,3 +50,32 @@ export interface MemberView {
   role: string;
   verified: boolean;
 }
+
+// --- Payments (dues + donations via Paystack) ---
+export const PAYMENT_TYPES = ["DUES", "DONATION"] as const;
+export type PaymentType = (typeof PAYMENT_TYPES)[number];
+
+export const PAYMENT_STATUSES = ["PENDING", "SUCCESS", "FAILED"] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+/** Amount is whole naira; the server converts to kobo for Paystack. */
+export const PaymentInitSchema = z.object({
+  type: z.enum(PAYMENT_TYPES),
+  amount: z.number().int().min(100).max(10_000_000),
+});
+export type PaymentInitInput = z.infer<typeof PaymentInitSchema>;
+
+export interface PaymentView {
+  id: string;
+  type: PaymentType;
+  amount: number; // naira (kobo / 100)
+  reference: string;
+  status: PaymentStatus;
+  createdAt: string; // ISO string
+}
+
+/** Admin-only view: includes who made the payment. */
+export interface AdminPaymentView extends PaymentView {
+  memberName: string;
+  memberEmail: string;
+}

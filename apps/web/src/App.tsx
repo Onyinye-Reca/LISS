@@ -15,6 +15,8 @@ import FinancialsPage from "./pages/FinancialsPage";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
+import PayPage from "./pages/PayPage";
+import PayCallbackPage from "./pages/PayCallbackPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -30,6 +32,7 @@ import AnnouncementsAdminPage from "./pages/admin/AnnouncementsAdminPage";
 import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
 import EventsAdminPage from "./pages/admin/EventsAdminPage";
 import FinancialsAdminPage from "./pages/admin/FinancialsAdminPage";
+import PaymentsAdminPage from "./pages/admin/PaymentsAdminPage";
 import BlogAdminPage from "./pages/admin/BlogAdminPage";
 import ContactAdminPage from "./pages/admin/ContactAdminPage";
 import SettingsAdminPage from "./pages/admin/SettingsAdminPage";
@@ -60,8 +63,11 @@ export default function App() {
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
           <Route path="/financials" element={<FinancialsPage />} />
-          {/* Not built yet, but gated so they don't leak to logged-out users. */}
-          <Route path="/donate" element={<ComingSoonPage />} />
+          {/* Dues & donations (Paystack). /donate kept as an alias for old links. */}
+          <Route path="/pay" element={<PayPage />} />
+          <Route path="/pay/callback" element={<PayCallbackPage />} />
+          <Route path="/donate" element={<PayPage />} />
+          {/* Not built yet, but gated so it doesn't leak to logged-out users. */}
           <Route path="/decides" element={<ComingSoonPage />} />
         </Route>
 
@@ -86,6 +92,7 @@ export default function App() {
           <Route path="gallery" element={<GalleryAdminPage />} />
           <Route path="events" element={<EventsAdminPage />} />
           <Route path="financials" element={<FinancialsAdminPage />} />
+          <Route path="payments" element={<PaymentsAdminPage />} />
           <Route path="blog" element={<BlogAdminPage />} />
           <Route path="contact" element={<ContactAdminPage />} />
           <Route path="settings" element={<SettingsAdminPage />} />

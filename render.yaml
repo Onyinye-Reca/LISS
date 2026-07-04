@@ -38,9 +38,24 @@ services:
         sync: false
       - key: EMAIL_FROM
         value: "LISS11' Alumni <emove.nig@gmail.com>"
+      # Inbox that receives contact-form notifications (staging). Production
+      # uses lissclass11@gmail.com. Requires SMTP_PASS set for mail to send.
+      - key: CONTACT_TO
+        value: emove.nig@gmail.com
       # Alternative provider, unused while SMTP_* is set. Needs a verified
       # sending domain in Resend; leave blank when using Gmail SMTP.
       - key: RESEND_API_KEY
+        sync: false
+      # Paystack secret key (sk_test_... on staging). Used to start transactions
+      # and to verify webhook signatures. Set in the dashboard. Also add the
+      # webhook URL https://liss11-api-staging.onrender.com/payments/webhook in
+      # the Paystack dashboard. Without this key, payments return 503.
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      # Media uploads (Cloudinary). Without it, uploads use local disk, which is
+      # ephemeral on Render's free tier (wiped on redeploy). Format:
+      # cloudinary://<api_key>:<api_secret>@<cloud_name>
+      - key: CLOUDINARY_URL
         sync: false
       # Staging Postgres lives on Neon (free). Paste the connection string
       # into the Render dashboard after the service is created.

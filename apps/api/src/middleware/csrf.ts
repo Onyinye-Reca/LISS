@@ -22,8 +22,9 @@ const CSRF_HEADER = "x-csrf-token";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 // Paths exempt from CSRF (e.g. machine-to-machine webhooks that authenticate
-// via signature, not cookies). None yet; Paystack's webhook will go here.
-const EXEMPT_PREFIXES: string[] = [];
+// via signature, not cookies). The Paystack webhook authenticates via its
+// HMAC signature (see PaystackService.verifyWebhookSignature).
+const EXEMPT_PREFIXES: string[] = ["/payments/webhook"];
 
 export function issueCsrfToken(res: Response): string {
   const token = randomBytes(32).toString("hex");
