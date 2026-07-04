@@ -82,7 +82,7 @@ export default function PayPage() {
           onChange={(e) => setAmount(e.target.value)}
         />
         <Button type="submit" disabled={busy}>
-          {busy ? "Redirecting to Paystack…" : "Continue to payment"}
+          {busy ? "Starting payment…" : "Continue to payment"}
         </Button>
       </form>
 
