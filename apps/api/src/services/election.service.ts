@@ -50,6 +50,13 @@ export class ElectionService {
       seenPositions.add(sel.positionId);
     }
 
+    // Require a complete ballot: one selection for every position. Partial
+    // ballots would otherwise mark the member "voted" and hide the form,
+    // locking them out of the remaining positions.
+    if (seenPositions.size !== election.positions.length) {
+      throw new ElectionError("Please vote for every position", 400);
+    }
+
     const already = await this.repo.votedPositionIds(memberId, electionId);
     if (input.selections.some((s) => already.has(s.positionId))) {
       throw new ElectionError("You have already voted in this election", 409);
