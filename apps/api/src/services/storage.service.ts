@@ -24,8 +24,13 @@ export interface StorageService {
   uploadImage(file: UploadedFile, folder: string): Promise<string>;
   /** Uploads a private document and returns an opaque storage reference. */
   uploadDocument(file: UploadedFile, folder: string): Promise<string>;
-  /** Resolves a stored reference into a way to deliver the file. */
-  getDocument(ref: string, fileName: string): Promise<DocumentDelivery>;
+  /** Resolves a stored reference into a way to deliver the file. Pass
+   *  attachment=true to force a download rather than an inline preview. */
+  getDocument(
+    ref: string,
+    fileName: string,
+    attachment?: boolean,
+  ): Promise<DocumentDelivery>;
   /** Removes a stored document so deletes don't leave orphaned files. */
   deleteDocument(ref: string): Promise<void>;
 }
@@ -79,18 +84,23 @@ export class CloudinaryStorageService implements StorageService {
     });
   }
 
-  async getDocument(ref: string): Promise<DocumentDelivery> {
+  async getDocument(
+    ref: string,
+    _fileName: string,
+    attachment = false,
+  ): Promise<DocumentDelivery> {
     const cloudinary = this.sdk();
-    // Signed *inline* delivery URL so the PDF previews in the browser (rather
-    // than force-downloading). The asset is `authenticated`, so it is only
-    // reachable with this signature - and the controller only mints it after
-    // checking the member's session. Requires Cloudinary's "Allow delivery of
-    // PDF and ZIP files" setting to be enabled.
+    // Signed delivery URL. Inline by default so the PDF previews in the browser;
+    // fl_attachment forces a download when requested. The asset is
+    // `authenticated`, so it is only reachable with this signature - and the
+    // controller only mints it after checking the member's session. Requires
+    // Cloudinary's "Allow delivery of PDF and ZIP files" setting to be enabled.
     const redirectUrl = cloudinary.url(ref, {
       resource_type: "raw",
       type: "authenticated",
       sign_url: true,
       secure: true,
+      ...(attachment ? { flags: "attachment" } : {}),
     });
     return { redirectUrl };
   }

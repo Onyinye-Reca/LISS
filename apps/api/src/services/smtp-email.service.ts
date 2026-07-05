@@ -42,6 +42,11 @@ export class SmtpEmailService implements EmailService {
       port,
       secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
       auth: { user, pass },
+      // Without these, a stalled SMTP connection hangs the request forever.
+      // Fail fast instead so callers (verification, contact) don't block.
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
     });
     // Gmail only lets you send as the authenticated account (or its aliases),
     // so EMAIL_FROM should use SMTP_USER's address. Falls back to it.

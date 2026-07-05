@@ -32,6 +32,8 @@ import "./controllers/financial-statement.controller";
 import "./controllers/blog-post.controller";
 import "./controllers/site-setting.controller";
 import "./controllers/payment.controller";
+import "./controllers/avatar-upload.controller";
+import "./controllers/election.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
@@ -100,6 +102,12 @@ server.setConfig((app) => {
   app.use(
     "/contact",
     rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, standardHeaders: true }),
+  );
+
+  // Throttle the public (unauthenticated) avatar upload used at sign-up.
+  app.use(
+    "/uploads/avatar",
+    rateLimit({ windowMs: 60 * 60 * 1000, limit: 20, standardHeaders: true }),
   );
 });
 

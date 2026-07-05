@@ -26,6 +26,8 @@ import {
 import { PaymentRepository } from "./repositories/payment.repository";
 import { PaystackService } from "./services/paystack.service";
 import { PaymentService } from "./services/payment.service";
+import { ElectionRepository } from "./repositories/election.repository";
+import { ElectionService } from "./services/election.service";
 
 export function buildContainer(): Container {
   const container = new Container();
@@ -59,6 +61,8 @@ export function buildContainer(): Container {
   container.bind(TYPES.PaymentRepository).to(PaymentRepository);
   container.bind(TYPES.PaystackService).to(PaystackService);
   container.bind(TYPES.PaymentService).to(PaymentService);
+  container.bind(TYPES.ElectionRepository).to(ElectionRepository);
+  container.bind(TYPES.ElectionService).to(ElectionService);
 
   // Use real email when configured; otherwise log links to the console so
   // local dev needs no credentials (PRD section 8 + Group C plan).

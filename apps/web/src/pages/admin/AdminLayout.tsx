@@ -11,6 +11,7 @@ const navItems = [
   { to: "/admin/events", label: "Events", end: false },
   { to: "/admin/financials", label: "Financials", end: false },
   { to: "/admin/payments", label: "Payments", end: false },
+  { to: "/admin/elections", label: "Elections", end: false },
   { to: "/admin/blog", label: "Blog", end: false },
   { to: "/admin/contact", label: "Contact Messages", end: false },
   { to: "/admin/settings", label: "Site Settings", end: false },

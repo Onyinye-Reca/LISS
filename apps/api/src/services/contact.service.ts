@@ -22,12 +22,12 @@ export class ContactService {
 
     const to = process.env.CONTACT_TO;
     if (to) {
-      try {
-        await this.email.sendContactNotification(to, input);
-      } catch (err) {
-        // Soft failure. The message is already stored. Report so ops sees it.
-        captureError(err);
-      }
+      // Fire-and-forget: the message is already stored, so the user should not
+      // wait on (or fail because of) email delivery. Errors are reported but
+      // never bubble up to the request.
+      void this.email
+        .sendContactNotification(to, input)
+        .catch((err) => captureError(err));
     }
   }
 }

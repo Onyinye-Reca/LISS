@@ -8,12 +8,15 @@ export default function ImageUpload({
   onChange,
   label = "Photo",
   shape = "circle",
+  uploader = uploadImage,
 }: {
   value: string | null;
   folder: string;
   onChange: (url: string | null) => void;
   label?: string;
   shape?: "circle" | "rect";
+  // Override the upload function (e.g. the public avatar endpoint at sign-up).
+  uploader?: (file: File, folder: string) => Promise<string>;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +31,7 @@ export default function ImageUpload({
     setBusy(true);
     setError(null);
     try {
-      onChange(await uploadImage(file, folder));
+      onChange(await uploader(file, folder));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {

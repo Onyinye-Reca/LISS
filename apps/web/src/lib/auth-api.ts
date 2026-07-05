@@ -34,12 +34,22 @@ export async function register(
   lastName: string,
   email: string,
   password: string,
+  photoUrl: string,
 ): Promise<void> {
   const res = await apiFetch("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ firstName, lastName, email, password }),
+    body: JSON.stringify({ firstName, lastName, email, password, photoUrl }),
   });
   if (!res.ok) throw new Error(await errorMessage(res, "Registration failed"));
+}
+
+/** Public avatar upload used during sign-up (the member has no session yet). */
+export async function uploadAvatar(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await apiFetch("/uploads/avatar", { method: "POST", body: form });
+  if (!res.ok) throw new Error(await errorMessage(res, "Could not upload photo"));
+  return ((await res.json()) as { url: string }).url;
 }
 
 export async function logout(): Promise<void> {

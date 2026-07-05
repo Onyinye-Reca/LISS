@@ -38,6 +38,7 @@ export class AuthService {
     email: string;
     role: string;
     verified: boolean;
+    photoUrl: string | null;
   }): MemberView {
     return {
       id: m.id,
@@ -46,6 +47,7 @@ export class AuthService {
       email: m.email,
       role: m.role,
       verified: m.verified,
+      photoUrl: m.photoUrl,
     };
   }
 
@@ -87,6 +89,7 @@ export class AuthService {
       lastName: input.lastName,
       email: input.email,
       passwordHash,
+      photoUrl: input.photoUrl,
     });
 
     await this.issueVerification(member.id, member.email);

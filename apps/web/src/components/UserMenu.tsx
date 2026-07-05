@@ -40,9 +40,13 @@ export default function UserMenu() {
         aria-expanded={open}
         aria-label={`Account menu for ${member.firstName} ${member.lastName}`}
         title={`${member.firstName} ${member.lastName}`}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-maroon text-sm font-semibold text-white ring-offset-2 ring-offset-cream transition hover:bg-maroon-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-maroon text-sm font-semibold text-white ring-offset-2 ring-offset-cream transition hover:bg-maroon-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       >
-        {initial}
+        {member.photoUrl ? (
+          <img src={member.photoUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
+        ) : (
+          initial
+        )}
       </button>
 
       {open && (

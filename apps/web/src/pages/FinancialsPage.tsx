@@ -46,15 +46,23 @@ export default function FinancialsPage() {
                   Uploaded {formatDate(s.uploadedAt)}
                 </p>
               </div>
-              {/* Session-gated endpoint; opens in a new tab. */}
-              <a
-                href={financialDownloadUrl(s.id)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0 rounded-lg bg-maroon px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-dark"
-              >
-                View PDF
-              </a>
+              {/* Session-gated endpoint. View previews inline; Download forces a file. */}
+              <div className="flex shrink-0 gap-2">
+                <a
+                  href={financialDownloadUrl(s.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg border border-maroon px-4 py-2 text-sm font-semibold text-maroon hover:bg-maroon/5"
+                >
+                  View
+                </a>
+                <a
+                  href={financialDownloadUrl(s.id, true)}
+                  className="rounded-lg bg-maroon px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-dark"
+                >
+                  Download
+                </a>
+              </div>
             </li>
           ))}
         </ul>

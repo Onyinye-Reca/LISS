@@ -27,6 +27,9 @@ model Member {
   firstName    String    @map("first_name")
   lastName     String    @map("last_name")
   email        String    @unique
+  // Profile picture (Cloudinary/local URL). Required for new sign-ups; nullable
+  // so members who registered before this stay valid (grandfathered).
+  photoUrl     String?   @map("photo_url")
   passwordHash String    @map("password_hash")
   role         Role      @default(MEMBER)
   verified     Boolean   @default(false)

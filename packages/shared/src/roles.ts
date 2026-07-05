@@ -23,3 +23,14 @@ export const ADMIN_PANEL_ROLES: Role[] = [
  * Excludes ELECTORAL_COMMITTEE, who are scoped to elections only (PRD 4.11).
  */
 export const CONTENT_ROLES: Role[] = [Role.EDITOR, Role.ADMIN, Role.SUPER_ADMIN];
+
+/**
+ * Roles allowed to manage elections (the Electoral Committee plus admins).
+ * Mirror of CONTENT_ROLES for the election domain (PRD 4.11 isolation): the
+ * Electoral Committee can run elections but not touch general content.
+ */
+export const ELECTION_ROLES: Role[] = [
+  Role.ELECTORAL_COMMITTEE,
+  Role.ADMIN,
+  Role.SUPER_ADMIN,
+];

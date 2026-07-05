@@ -189,8 +189,8 @@ export async function deleteFinancialStatement(id: string): Promise<void> {
   await ok(res, () => undefined, "Could not delete statement");
 }
 /** Session-gated download endpoint; the cookie rides along on navigation. */
-export function financialDownloadUrl(id: string): string {
-  return `${API_BASE}/financials/${id}/download`;
+export function financialDownloadUrl(id: string, download = false): string {
+  return `${API_BASE}/financials/${id}/download${download ? "?download=1" : ""}`;
 }
 
 // --- Blog (public; drafts visible to content-role admins) ---
