@@ -54,17 +54,25 @@ export class FinancialStatementController {
     res.json({ statements: items.map(toView) });
   }
 
-  // Session-gated download: only after auth do we mint a signed/streamed link.
+  // Session-gated delivery: only after auth do we mint a signed/streamed link.
+  // ?download=1 forces a file download; otherwise the PDF previews inline.
   @httpGet("/:id/download", requireAuth)
-  async download(req: { params: { id: string } }, res: Response) {
+  async download(
+    req: { params: { id: string }; query: { download?: string } },
+    res: Response,
+  ) {
     try {
       const stmt = await this.repo.findById(req.params.id);
       if (!stmt) return res.status(404).json({ error: "Statement not found" });
       const name = stmt.fileName ?? "statement.pdf";
-      const delivery = await this.storage.getDocument(stmt.fileRef, name);
+      const attachment = req.query.download === "1";
+      const delivery = await this.storage.getDocument(stmt.fileRef, name, attachment);
       if (delivery.redirectUrl) return res.redirect(delivery.redirectUrl);
-      // Stream inline (not res.download) so the PDF previews in the browser.
-      if (delivery.localPath) return res.sendFile(delivery.localPath);
+      if (delivery.localPath) {
+        return attachment
+          ? res.download(delivery.localPath, name)
+          : res.sendFile(delivery.localPath);
+      }
       return res.status(500).json({ error: "File unavailable" });
     } catch (err) {
       captureError(err);

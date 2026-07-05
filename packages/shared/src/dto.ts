@@ -9,6 +9,9 @@ export const RegisterSchema = z.object({
   lastName: z.string().min(1).max(60),
   email: z.string().email(),
   password: z.string().min(8).max(128),
+  // Uploaded via POST /uploads/avatar first; the resulting URL is submitted
+  // here. Required for new sign-ups (existing members are grandfathered).
+  photoUrl: z.string().url(),
 });
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
@@ -49,6 +52,7 @@ export interface MemberView {
   email: string;
   role: string;
   verified: boolean;
+  photoUrl: string | null;
 }
 
 // --- Payments (dues + donations via Paystack) ---

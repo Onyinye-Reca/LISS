@@ -1,13 +1,15 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { register } from "../lib/auth-api";
+import { register, uploadAvatar } from "../lib/auth-api";
 import { AuthShell, TextField, Button, Alert } from "../components/ui";
+import ImageUpload from "../components/ImageUpload";
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -15,9 +17,13 @@ export default function RegisterPage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!photoUrl) {
+      setError("Please add a profile picture.");
+      return;
+    }
     setBusy(true);
     try {
-      await register(firstName, lastName, email, password);
+      await register(firstName, lastName, email, password, photoUrl);
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -59,6 +65,14 @@ export default function RegisterPage() {
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error && <Alert>{error}</Alert>}
+        <ImageUpload
+          value={photoUrl}
+          folder="avatars"
+          uploader={uploadAvatar}
+          onChange={setPhotoUrl}
+          label="Profile picture (required)"
+          shape="circle"
+        />
         <TextField
           label="First name"
           autoComplete="given-name"

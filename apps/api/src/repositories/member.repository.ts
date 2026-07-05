@@ -23,6 +23,7 @@ export class MemberRepository {
     lastName: string;
     email: string;
     passwordHash: string;
+    photoUrl: string;
   }): Promise<Member> {
     return this.prisma.member.create({ data });
   }

@@ -21,4 +21,6 @@ export const TYPES = {
   PaymentRepository: Symbol.for("PaymentRepository"),
   PaystackService: Symbol.for("PaystackService"),
   PaymentService: Symbol.for("PaymentService"),
+  ElectionRepository: Symbol.for("ElectionRepository"),
+  ElectionService: Symbol.for("ElectionService"),
 } as const;

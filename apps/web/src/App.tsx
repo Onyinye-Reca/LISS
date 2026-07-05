@@ -17,6 +17,8 @@ import BlogPostPage from "./pages/BlogPostPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import PayPage from "./pages/PayPage";
 import PayCallbackPage from "./pages/PayCallbackPage";
+import ElectionsPage from "./pages/ElectionsPage";
+import ElectionBallotPage from "./pages/ElectionBallotPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -33,6 +35,7 @@ import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
 import EventsAdminPage from "./pages/admin/EventsAdminPage";
 import FinancialsAdminPage from "./pages/admin/FinancialsAdminPage";
 import PaymentsAdminPage from "./pages/admin/PaymentsAdminPage";
+import ElectionsAdminPage from "./pages/admin/ElectionsAdminPage";
 import BlogAdminPage from "./pages/admin/BlogAdminPage";
 import ContactAdminPage from "./pages/admin/ContactAdminPage";
 import SettingsAdminPage from "./pages/admin/SettingsAdminPage";
@@ -67,8 +70,10 @@ export default function App() {
           <Route path="/pay" element={<PayPage />} />
           <Route path="/pay/callback" element={<PayCallbackPage />} />
           <Route path="/donate" element={<PayPage />} />
-          {/* Not built yet, but gated so it doesn't leak to logged-out users. */}
-          <Route path="/decides" element={<ComingSoonPage />} />
+          {/* Elections ("LISS Decides"). /decides kept as an alias. */}
+          <Route path="/elections" element={<ElectionsPage />} />
+          <Route path="/elections/:id" element={<ElectionBallotPage />} />
+          <Route path="/decides" element={<ElectionsPage />} />
         </Route>
 
         {/* Unknown public routes fall back to a placeholder. */}
@@ -93,6 +98,7 @@ export default function App() {
           <Route path="events" element={<EventsAdminPage />} />
           <Route path="financials" element={<FinancialsAdminPage />} />
           <Route path="payments" element={<PaymentsAdminPage />} />
+          <Route path="elections" element={<ElectionsAdminPage />} />
           <Route path="blog" element={<BlogAdminPage />} />
           <Route path="contact" element={<ContactAdminPage />} />
           <Route path="settings" element={<SettingsAdminPage />} />
