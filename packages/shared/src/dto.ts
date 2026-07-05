@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Role } from "./roles";
 
 /**
  * Request DTOs defined with Zod so the API can validate at runtime
@@ -36,6 +37,12 @@ export const ResetPasswordSchema = z.object({
   password: z.string().min(8).max(128),
 });
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+
+/** Role update payload for admin role management */
+export const RoleUpdateSchema = z.object({
+  role: z.nativeEnum(Role),
+});
+export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
 
 export const ContactSchema = z.object({
   name: z.string().min(2).max(120),
