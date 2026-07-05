@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { controller, httpGet, httpPost, httpPut, httpDelete } from "inversify-express-utils";
 import { inject } from "inversify";
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import {
   FinancialStatementCreateSchema,
   FinancialStatementUpdateSchema,
@@ -82,20 +82,27 @@ export class FinancialStatementController {
 
   @httpPost("/", ...writeGuards)
   async create(req: { body: Record<string, unknown>; file?: Express.Multer.File }, res: Response) {
+    // 1. Parse the upload. multer/file-filter errors are the user's fault.
     try {
-      // Run multer in-handler so size/type errors become 400s (like uploads).
       await new Promise<void>((resolve, reject) =>
         upload(req as never, res, (err) => (err ? reject(err) : resolve())),
       );
-      if (!req.file) return res.status(400).json({ error: "No file provided" });
+    } catch (err) {
+      const status =
+        err instanceof MulterError && err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+      return res.status(status).json({ error: err instanceof Error ? err.message : "Invalid upload" });
+    }
+    if (!req.file) return res.status(400).json({ error: "No file provided" });
 
-      const parsed = FinancialStatementCreateSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res
-          .status(400)
-          .json({ error: parsed.error.issues[0]?.message ?? "Invalid input" });
-      }
+    const parsed = FinancialStatementCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res
+        .status(400)
+        .json({ error: parsed.error.issues[0]?.message ?? "Invalid input" });
+    }
 
+    // 2. Store + record. Storage/DB failures are server errors (500, logged).
+    try {
       const fileRef = await this.storage.uploadDocument(req.file, "financials");
       const stmt = await this.repo.create({
         title: parsed.data.title,
@@ -105,7 +112,6 @@ export class FinancialStatementController {
       });
       res.status(201).json({ statement: toView(stmt) });
     } catch (err) {
-      if (err instanceof Error) return res.status(400).json({ error: err.message });
       captureError(err);
       res.status(500).json({ error: "Upload failed" });
     }
