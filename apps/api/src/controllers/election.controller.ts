@@ -153,6 +153,20 @@ export class ElectionController {
   async update(req: AuthedRequest, res: Response) {
     try {
       const b = req.body;
+      // Opening voting requires a complete, votable ballot: at least one
+      // position, each with at least one candidate.
+      if (b.isOpen === true) {
+        const current = await this.repo.findById(req.params.id);
+        if (!current) return res.status(404).json({ error: "Election not found" });
+        if (
+          current.positions.length === 0 ||
+          current.positions.some((p) => p.candidates.length === 0)
+        ) {
+          return res.status(400).json({
+            error: "Every position needs at least one candidate before you can open voting.",
+          });
+        }
+      }
       const data: Prisma.ElectionUncheckedUpdateInput = {};
       if (b.title !== undefined) data.title = b.title;
       if (b.isOpen !== undefined) data.isOpen = b.isOpen;
@@ -188,10 +202,16 @@ export class ElectionController {
   @httpPost("/:id/positions", ...manageGuards, validateBody(PositionCreateSchema))
   async addPosition(req: AuthedRequest, res: Response) {
     try {
-      await this.repo.createPosition(req.params.id, req.body.title);
-      const full = await this.repo.findById(req.params.id);
-      if (!full) return res.status(404).json({ error: "Election not found" });
-      res.status(201).json({ election: toDetail(full, false) });
+      // Pre-check existence (correct 404 instead of a Prisma FK 500) and block
+      // structural changes while voting is open.
+      const election = await this.repo.findById(req.params.id);
+      if (!election) return res.status(404).json({ error: "Election not found" });
+      if (election.isOpen) {
+        return res.status(409).json({ error: "Close voting before changing positions" });
+      }
+      await this.repo.createPosition(election.id, req.body.title);
+      const full = await this.repo.findById(election.id);
+      res.status(201).json({ election: toDetail(full!, false) });
     } catch (err) {
       captureError(err);
       res.status(500).json({ error: "Could not add position" });
@@ -201,10 +221,12 @@ export class ElectionController {
   @httpDelete("/positions/:positionId", ...manageGuards)
   async removePosition(req: AuthedRequest, res: Response) {
     try {
+      const open = await this.repo.positionOpenState(req.params.positionId);
+      if (open === null) return res.status(404).json({ error: "Position not found" });
+      if (open) return res.status(409).json({ error: "Close voting before changing positions" });
       await this.repo.deletePosition(req.params.positionId);
       res.json({ ok: true });
     } catch (err) {
-      if (code(err) === "P2025") return res.status(404).json({ error: "Position not found" });
       if (code(err) === "P2003") {
         return res.status(409).json({ error: "Cannot delete a position that has votes" });
       }
@@ -216,13 +238,15 @@ export class ElectionController {
   @httpPost("/positions/:positionId/candidates", ...manageGuards, validateBody(CandidateCreateSchema))
   async addCandidate(req: AuthedRequest, res: Response) {
     try {
+      const open = await this.repo.positionOpenState(req.params.positionId);
+      if (open === null) return res.status(404).json({ error: "Position not found" });
+      if (open) return res.status(409).json({ error: "Close voting before changing candidates" });
       await this.repo.createCandidate(req.params.positionId, {
         name: req.body.name,
         manifesto: req.body.manifesto ?? null,
       });
       res.status(201).json({ ok: true });
     } catch (err) {
-      if (code(err) === "P2003") return res.status(404).json({ error: "Position not found" });
       captureError(err);
       res.status(500).json({ error: "Could not add candidate" });
     }
@@ -231,10 +255,12 @@ export class ElectionController {
   @httpDelete("/candidates/:candidateId", ...manageGuards)
   async removeCandidate(req: AuthedRequest, res: Response) {
     try {
+      const open = await this.repo.candidateOpenState(req.params.candidateId);
+      if (open === null) return res.status(404).json({ error: "Candidate not found" });
+      if (open) return res.status(409).json({ error: "Close voting before changing candidates" });
       await this.repo.deleteCandidate(req.params.candidateId);
       res.json({ ok: true });
     } catch (err) {
-      if (code(err) === "P2025") return res.status(404).json({ error: "Candidate not found" });
       if (code(err) === "P2003") {
         return res.status(409).json({ error: "Cannot delete a candidate that has votes" });
       }

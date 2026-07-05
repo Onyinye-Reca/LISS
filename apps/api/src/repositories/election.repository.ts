@@ -92,6 +92,24 @@ export class ElectionRepository {
     return new Set(votes.map((v) => v.electionId));
   }
 
+  /** isOpen of the election a position belongs to; null if the position is gone. */
+  async positionOpenState(positionId: string): Promise<boolean | null> {
+    const pos = await this.prisma.position.findUnique({
+      where: { id: positionId },
+      select: { election: { select: { isOpen: true } } },
+    });
+    return pos ? pos.election.isOpen : null;
+  }
+
+  /** isOpen of the election a candidate belongs to; null if the candidate is gone. */
+  async candidateOpenState(candidateId: string): Promise<boolean | null> {
+    const cand = await this.prisma.candidate.findUnique({
+      where: { id: candidateId },
+      select: { position: { select: { election: { select: { isOpen: true } } } } },
+    });
+    return cand ? cand.position.election.isOpen : null;
+  }
+
   /** All (positionId, candidateId) votes for an election, for tallying. */
   electionVotes(
     electionId: string,
