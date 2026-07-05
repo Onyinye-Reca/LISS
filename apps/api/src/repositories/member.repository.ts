@@ -50,4 +50,11 @@ export class MemberRepository {
       select: { role: true, tokenVersion: true },
     });
   }
+
+  /** Set a member's role (used by admin workflows). */
+  setRole(id: string, role: unknown): Promise<Member> {
+    // Cast to satisfy Prisma's generated enum type. Caller should validate the
+    // role value (we validate at the controller level with Zod).
+    return this.prisma.member.update({ where: { id }, data: { role: role as any } });
+  }
 }

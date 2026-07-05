@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { controller, httpPost } from "inversify-express-utils";
 import { inject } from "inversify";
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import { CONTENT_ROLES } from "@liss11/shared";
 import { TYPES } from "../types";
 import type { StorageService } from "../services/storage.service";
@@ -28,21 +28,24 @@ export class UploadController {
 
   @httpPost("/", requireAuth, requireRole(...CONTENT_ROLES))
   async uploadImage(req: Request, res: Response) {
+    // 1. Parse the upload. multer/file-filter errors are the user's fault.
     try {
-      // Run multer inside the handler so its errors (size/type) become 400s.
       await new Promise<void>((resolve, reject) =>
         upload(req, res, (err) => (err ? reject(err) : resolve())),
       );
-      if (!req.file) return res.status(400).json({ error: "No file provided" });
+    } catch (err) {
+      const status =
+        err instanceof MulterError && err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+      return res.status(status).json({ error: err instanceof Error ? err.message : "Invalid upload" });
+    }
+    if (!req.file) return res.status(400).json({ error: "No file provided" });
 
+    // 2. Store it. Storage/provider failures are server errors (500, logged).
+    try {
       const folder = typeof req.body.folder === "string" ? req.body.folder : "misc";
       const url = await this.storage.uploadImage(req.file, folder);
       res.json({ url });
     } catch (err) {
-      // Validation-style errors (bad type/size) are the user's fault -> 400.
-      if (err instanceof Error) {
-        return res.status(400).json({ error: err.message });
-      }
       captureError(err);
       res.status(500).json({ error: "Upload failed" });
     }

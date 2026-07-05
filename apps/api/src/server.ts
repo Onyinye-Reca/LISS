@@ -33,6 +33,7 @@ import "./controllers/blog-post.controller";
 import "./controllers/site-setting.controller";
 import "./controllers/payment.controller";
 import "./controllers/avatar-upload.controller";
+import "./controllers/admin-members.controller";
 import "./controllers/election.controller";
 
 const PORT = Number(process.env.PORT ?? 4000);
@@ -49,6 +50,12 @@ configureAuthLookup((id) => memberRepository.findAuthInfo(id));
 const server = new InversifyExpressServer(container);
 
 server.setConfig((app) => {
+  // Behind Render's load balancer (and the Netlify /api proxy), so the client
+  // IP arrives via X-Forwarded-For. Trust the proxy so req.ip is the real
+  // client and express-rate-limit keys on it correctly (a specific hop count,
+  // not `true`, which express-rate-limit warns is too permissive).
+  app.set("trust proxy", 1);
+
   app.use(helmet());
   app.use(
     cors({
