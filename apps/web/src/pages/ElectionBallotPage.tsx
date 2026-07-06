@@ -18,8 +18,8 @@ export default function ElectionBallotPage() {
     try {
       const e = await getElection(id);
       setElection(e);
-      // Members can only see results once voting has closed.
-      if (!e.isOpen) {
+      // Members can only see results once the committee publishes them.
+      if (e.resultsPublished) {
         try {
           setResults(await getElectionResults(id));
         } catch {
@@ -115,6 +115,13 @@ export default function ElectionBallotPage() {
                       onChange={() => setSelections((s) => ({ ...s, [p.id]: c.id }))}
                       className="mt-1"
                     />
+                    {c.photoUrl && (
+                      <img
+                        src={c.photoUrl}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-full object-cover"
+                      />
+                    )}
                     <div>
                       <div className="font-medium text-nearblack">{c.name}</div>
                       {c.manifesto && <div className="text-sm text-ink/60">{c.manifesto}</div>}

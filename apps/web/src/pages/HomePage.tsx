@@ -47,6 +47,8 @@ export default function HomePage() {
   const [hero, setHero] = useState<SiteSettingsView>({
     heroVideoUrl: null,
     heroPosterUrl: null,
+    annualDuesNaira: null,
+    constitutionUrl: null,
   });
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);

@@ -252,10 +252,17 @@ export interface FinancialStatementView {
 export interface SiteSettingsView {
   heroVideoUrl: string | null;
   heroPosterUrl: string | null;
+  annualDuesNaira: number | null;
+  constitutionUrl: string | null;
 }
 export const SiteSettingsUpdateSchema = z.object({
   heroVideoUrl: nullableUrl,
   heroPosterUrl: nullableUrl,
+  constitutionUrl: nullableUrl,
+  annualDuesNaira: z.preprocess(
+    (v) => (v === "" || v === null ? null : typeof v === "string" ? Number(v) : v),
+    z.number().int().min(0).nullable().optional(),
+  ),
 });
 export type SiteSettingsUpdateInput = z.infer<typeof SiteSettingsUpdateSchema>;
 
@@ -264,6 +271,7 @@ export interface ContactMessageView {
   id: string;
   name: string;
   email: string;
+  subject: string | null;
   message: string;
   createdAt: string; // ISO string
 }

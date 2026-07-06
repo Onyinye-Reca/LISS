@@ -10,8 +10,11 @@ import {
   deletePosition,
   addCandidate,
   deleteCandidate,
+  uploadCandidatePhoto,
+  electionAuditCsvUrl,
 } from "../../lib/election-api";
 import { Button, TextField, Alert } from "../../components/ui";
+import ImageUpload from "../../components/ImageUpload";
 
 export default function ElectionsAdminPage() {
   const [elections, setElections] = useState<ElectionSummary[]>([]);
@@ -187,14 +190,35 @@ function ManagePanel({
     }
   };
 
+  const togglePublish = async () => {
+    setErr(null);
+    try {
+      await updateElection(election.id, { resultsPublished: !election.resultsPublished });
+      await onChange();
+    } catch (er) {
+      setErr(er instanceof Error ? er.message : "Could not update results visibility");
+    }
+  };
+
   return (
     <div className="rounded-xl border border-maroon/30 bg-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-maroon">Manage: {election.title}</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button type="button" onClick={() => void onToggleOpen()} className="w-auto px-4">
             {election.isOpen ? "Close voting" : "Open voting"}
           </Button>
+          {!election.isOpen && (
+            <Button type="button" onClick={() => void togglePublish()} className="w-auto px-4">
+              {election.resultsPublished ? "Unpublish results" : "Publish results"}
+            </Button>
+          )}
+          <a
+            href={electionAuditCsvUrl(election.id)}
+            className="text-sm font-medium text-maroon hover:underline"
+          >
+            Audit CSV
+          </a>
           <button onClick={onClose} className="text-sm text-ink/60 underline">
             Done
           </button>
@@ -259,15 +283,17 @@ function CandidateEditor({
 }) {
   const [name, setName] = useState("");
   const [manifesto, setManifesto] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const add = async (e: FormEvent) => {
     e.preventDefault();
     setErr(null);
     try {
-      await addCandidate(position.id, { name, manifesto: manifesto || null });
+      await addCandidate(position.id, { name, manifesto: manifesto || null, photoUrl });
       setName("");
       setManifesto("");
+      setPhotoUrl(null);
       await onChange();
     } catch (er) {
       setErr(er instanceof Error ? er.message : "Could not add candidate");
@@ -297,7 +323,12 @@ function CandidateEditor({
             key={c.id}
             className="flex items-center justify-between rounded border border-ink/10 px-3 py-1.5 text-sm"
           >
-            <span className="text-nearblack">{c.name}</span>
+            <span className="flex items-center gap-2 text-nearblack">
+              {c.photoUrl && (
+                <img src={c.photoUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+              )}
+              {c.name}
+            </span>
             <button
               onClick={() => void remove(c.id)}
               className="text-xs text-danger hover:underline"
@@ -310,6 +341,16 @@ function CandidateEditor({
           <li className="text-xs text-ink/50">No candidates yet.</li>
         )}
       </ul>
+      <div className="mt-3">
+        <ImageUpload
+          value={photoUrl}
+          folder="candidates"
+          uploader={uploadCandidatePhoto}
+          onChange={setPhotoUrl}
+          label="Candidate photo (optional)"
+          shape="circle"
+        />
+      </div>
       <form onSubmit={add} className="mt-2 grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
         <TextField label="Candidate" value={name} onChange={(e) => setName(e.target.value)} required />
         <TextField

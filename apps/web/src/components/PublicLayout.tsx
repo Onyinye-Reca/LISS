@@ -17,6 +17,7 @@ const isGroup = (i: NavItem): i is NavGroup => "children" in i;
 const navItems: NavItem[] = [
   { to: "/", label: "Home", end: true },
   { to: "/about", label: "About" },
+  { to: "/membership", label: "Membership" },
   {
     label: "Explore",
     children: [

@@ -27,6 +27,7 @@ export type ElectionCreateInput = z.infer<typeof ElectionCreateSchema>;
 export const ElectionUpdateSchema = z.object({
   title: z.string().min(2).max(200).optional(),
   isOpen: z.boolean().optional(),
+  resultsPublished: z.boolean().optional(),
   opensAt: nullableDate,
   closesAt: nullableDate,
 });
@@ -42,6 +43,10 @@ export const CandidateCreateSchema = z.object({
   manifesto: z.preprocess(
     (v) => (v === "" ? null : v),
     z.string().max(2000).nullable().optional(),
+  ),
+  photoUrl: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.string().url().nullable().optional(),
   ),
 });
 export type CandidateCreateInput = z.infer<typeof CandidateCreateSchema>;
@@ -65,6 +70,7 @@ export interface CandidateView {
   id: string;
   name: string;
   manifesto: string | null;
+  photoUrl: string | null;
 }
 
 export interface PositionView {
@@ -78,6 +84,7 @@ export interface ElectionSummary {
   id: string;
   title: string;
   isOpen: boolean;
+  resultsPublished: boolean;
   opensAt: string | null;
   closesAt: string | null;
   positionCount: number;
@@ -89,6 +96,7 @@ export interface ElectionDetail {
   id: string;
   title: string;
   isOpen: boolean;
+  resultsPublished: boolean;
   opensAt: string | null;
   closesAt: string | null;
   positions: PositionView[];

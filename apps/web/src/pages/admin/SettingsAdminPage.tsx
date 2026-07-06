@@ -6,6 +6,8 @@ import ImageUpload from "../../components/ImageUpload";
 export default function SettingsAdminPage() {
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [heroPosterUrl, setHeroPosterUrl] = useState<string | null>(null);
+  const [annualDuesNaira, setAnnualDuesNaira] = useState("");
+  const [constitutionUrl, setConstitutionUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -15,6 +17,8 @@ export default function SettingsAdminPage() {
       .then((s) => {
         setHeroVideoUrl(s.heroVideoUrl ?? "");
         setHeroPosterUrl(s.heroPosterUrl);
+        setAnnualDuesNaira(s.annualDuesNaira != null ? String(s.annualDuesNaira) : "");
+        setConstitutionUrl(s.constitutionUrl ?? "");
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
   }, []);
@@ -28,6 +32,8 @@ export default function SettingsAdminPage() {
       await updateSiteSettings({
         heroVideoUrl: heroVideoUrl.trim() || null,
         heroPosterUrl: heroPosterUrl || null,
+        constitutionUrl: constitutionUrl.trim() || null,
+        annualDuesNaira: annualDuesNaira.trim() === "" ? null : Number(annualDuesNaira),
       });
       setSaved(true);
     } catch (err) {
@@ -70,6 +76,36 @@ export default function SettingsAdminPage() {
           folder="hero"
           onChange={setHeroPosterUrl}
         />
+        <div className="border-t border-gold/20 pt-4">
+          <h2 className="font-semibold text-maroon">Membership dues</h2>
+          <p className="mb-3 mt-1 text-xs text-ink/50">
+            The annual dues amount. Members see this on their dues page and it
+            pre-fills the payment form. Leave blank if dues are not set.
+          </p>
+          <TextField
+            label="Annual dues (₦)"
+            type="number"
+            min={0}
+            step={1}
+            placeholder="e.g. 5000"
+            value={annualDuesNaira}
+            onChange={(e) => setAnnualDuesNaira(e.target.value)}
+          />
+        </div>
+        <div className="border-t border-gold/20 pt-4">
+          <h2 className="font-semibold text-maroon">Constitution</h2>
+          <p className="mb-3 mt-1 text-xs text-ink/50">
+            Paste a hosted PDF URL (e.g. uploaded to Cloudinary). A download
+            button appears on the About page when set.
+          </p>
+          <TextField
+            label="Constitution PDF URL"
+            type="url"
+            placeholder="https://res.cloudinary.com/.../constitution.pdf"
+            value={constitutionUrl}
+            onChange={(e) => setConstitutionUrl(e.target.value)}
+          />
+        </div>
         <Button type="submit" disabled={busy} className="w-auto px-5">
           {busy ? "Saving…" : "Save"}
         </Button>

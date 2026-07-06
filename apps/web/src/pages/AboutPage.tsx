@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { getSiteSettings } from "../lib/content-api";
 
 const sections = [
   {
@@ -22,6 +24,16 @@ const sections = [
 export default function AboutPage() {
   // The three sub-pages are members-only; flag that to logged-out visitors.
   const { member } = useAuth();
+  const [constitutionUrl, setConstitutionUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    getSiteSettings()
+      .then((s) => setConstitutionUrl(s.constitutionUrl))
+      .catch(() => {
+        /* the constitution link is optional */
+      });
+  }, []);
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-16">
       <header className="text-center">
@@ -47,6 +59,24 @@ export default function AboutPage() {
           </Link>
         ))}
       </div>
+
+      {constitutionUrl && (
+        <div className="mt-12 rounded-xl border border-gold/30 bg-card p-6 text-center">
+          <h2 className="text-lg font-semibold text-maroon">Our Constitution</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-ink/70">
+            The document that governs the association — its structure, roles, and
+            how we make decisions.
+          </p>
+          <a
+            href={constitutionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block rounded-lg bg-maroon px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon/90"
+          >
+            Download the Constitution (PDF)
+          </a>
+        </div>
+      )}
     </main>
   );
 }

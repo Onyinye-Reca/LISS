@@ -44,9 +44,22 @@ export const RoleUpdateSchema = z.object({
 });
 export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
 
+/** Contact form subjects. The API routes the notification email by subject. */
+export const CONTACT_SUBJECTS = [
+  "General",
+  "Membership",
+  "Elections",
+  "Financials",
+  "Events",
+  "Other",
+] as const;
+export type ContactSubject = (typeof CONTACT_SUBJECTS)[number];
+
 export const ContactSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email(),
+  // Optional for backward compatibility with older clients; defaults to General.
+  subject: z.enum(CONTACT_SUBJECTS).optional().default("General"),
   message: z.string().min(10).max(5000),
 });
 export type ContactInput = z.infer<typeof ContactSchema>;
@@ -89,4 +102,12 @@ export interface PaymentView {
 export interface AdminPaymentView extends PaymentView {
   memberName: string;
   memberEmail: string;
+}
+
+/** A member's dues status for a given year (PRD 4.9 / US-010). */
+export interface DuesStatusView {
+  year: number;
+  paid: boolean;
+  amountNaira: number | null; // what they paid, if paid
+  duesAmountNaira: number | null; // configured annual dues (for pre-fill)
 }

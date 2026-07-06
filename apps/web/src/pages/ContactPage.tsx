@@ -1,10 +1,12 @@
 import { FormEvent, useState } from "react";
+import { CONTACT_SUBJECTS, ContactSubject } from "@liss11/shared";
 import { submitContact } from "../lib/contact-api";
-import { TextField, Button, Alert } from "../components/ui";
+import { TextField, SelectField, Button, Alert } from "../components/ui";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState<ContactSubject>("General");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -15,10 +17,11 @@ export default function ContactPage() {
     setError(null);
     setBusy(true);
     try {
-      const msg = await submitContact({ name, email, message });
+      const msg = await submitContact({ name, email, subject, message });
       setSuccess(msg);
       setName("");
       setEmail("");
+      setSubject("General");
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not send your message");
@@ -57,6 +60,17 @@ export default function ContactPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <SelectField
+              label="Subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value as ContactSubject)}
+            >
+              {CONTACT_SUBJECTS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </SelectField>
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-ink">Message</span>
               <textarea
