@@ -47,12 +47,16 @@ export default function PayPage() {
   // Paying dues is blocked once this year's dues are settled.
   const duesPaid = type === "DUES" && dues?.paid === true;
 
+  // Dues must be at least the amount the admin set; donations only need ₦100.
+  const minAmount =
+    type === "DUES" && dues?.duesAmountNaira != null ? dues.duesAmountNaira : 100;
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     const naira = Number(amount);
-    if (!Number.isInteger(naira) || naira < 100) {
-      setError("Enter a whole amount of at least ₦100.");
+    if (!Number.isInteger(naira) || naira < minAmount) {
+      setError(`Enter a whole amount of at least ₦${minAmount.toLocaleString()}.`);
       return;
     }
     setBusy(true);
@@ -129,13 +133,19 @@ export default function PayPage() {
         <TextField
           label="Amount (₦)"
           type="number"
-          min={100}
+          min={minAmount}
           step={1}
           required
           disabled={duesPaid}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
+        {type === "DUES" && dues?.duesAmountNaira != null && !duesPaid && (
+          <p className="text-sm text-ink/60">
+            Dues are ₦{dues.duesAmountNaira.toLocaleString()}. You can pay this
+            amount or more.
+          </p>
+        )}
         {duesPaid ? (
           <p className="text-sm text-ink/60">
             You have already paid your {dues?.year} dues. Switch to “Donation” to

@@ -67,6 +67,15 @@ export class PaymentService {
       if (await this.repo.successfulDues(memberId, year)) {
         throw new PaymentError(`You have already paid your ${year} dues.`, 409);
       }
+      // Dues must meet the amount the admin configured (members may pay more).
+      const map = await this.settings.getMap();
+      const duesAmountNaira = map.annualDuesNaira ? Number(map.annualDuesNaira) : null;
+      if (duesAmountNaira && amountNaira < duesAmountNaira) {
+        throw new PaymentError(
+          `Dues must be at least ₦${duesAmountNaira.toLocaleString()}.`,
+          400,
+        );
+      }
     }
 
     const amountKobo = amountNaira * 100;
