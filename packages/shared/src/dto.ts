@@ -44,6 +44,14 @@ export const RoleUpdateSchema = z.object({
 });
 export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
 
+/** Manually verify/unverify a member (super-admin override). */
+export const MemberVerifiedSchema = z.object({ verified: z.boolean() });
+export type MemberVerifiedInput = z.infer<typeof MemberVerifiedSchema>;
+
+/** Activate/deactivate a member's ability to log in. */
+export const MemberActiveSchema = z.object({ approved: z.boolean() });
+export type MemberActiveInput = z.infer<typeof MemberActiveSchema>;
+
 /** Contact form subjects. The API routes the notification email by subject. */
 export const CONTACT_SUBJECTS = [
   "General",
@@ -73,6 +81,18 @@ export interface MemberView {
   role: string;
   verified: boolean;
   photoUrl: string | null;
+}
+
+/** Row in the super-admin members-management table (never includes the hash). */
+export interface AdminMemberView {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: Role;
+  verified: boolean;
+  approved: boolean; // false = deactivated (cannot log in)
+  createdAt: string; // ISO string
 }
 
 // --- Payments (dues + donations via Paystack) ---

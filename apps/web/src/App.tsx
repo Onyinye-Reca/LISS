@@ -28,6 +28,7 @@ import RequireAdmin from "./components/RequireAdmin";
 import RequireMember from "./components/RequireMember";
 import AdminLayout from "./pages/admin/AdminLayout";
 import DashboardPage from "./pages/admin/DashboardPage";
+import MembersAdminPage from "./pages/admin/MembersAdminPage";
 import ExcosAdminPage from "./pages/admin/ExcosAdminPage";
 import BotAdminPage from "./pages/admin/BotAdminPage";
 import RegionsAdminPage from "./pages/admin/RegionsAdminPage";
@@ -93,6 +94,7 @@ export default function App() {
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="members" element={<MembersAdminPage />} />
           <Route path="excos" element={<ExcosAdminPage />} />
           <Route path="bot" element={<BotAdminPage />} />
           <Route path="regions" element={<RegionsAdminPage />} />

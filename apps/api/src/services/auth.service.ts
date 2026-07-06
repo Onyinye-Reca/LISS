@@ -135,6 +135,11 @@ export class AuthService {
       throw new AuthError("Please verify your email before logging in", 403);
     }
 
+    // Deactivated accounts (approved = false) cannot log in.
+    if (!member.approved) {
+      throw new AuthError("Your account has been deactivated. Contact an administrator.", 403);
+    }
+
     const token = this.sign(member.id, member.role, member.tokenVersion);
     return { token, member: this.toView(member) };
   }
