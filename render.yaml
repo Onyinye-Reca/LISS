@@ -22,30 +22,20 @@ services:
         generateValue: true
       - key: SENTRY_DSN
         sync: false
-      # --- Email delivery: Gmail SMTP ---
-      # Staging sends from emove.nig@gmail.com. (Production uses
-      # lissclass11@gmail.com - set that on the production service.)
-      # SMTP_PASS is a Google App Password (16 chars, requires 2-Step
-      # Verification) for emove.nig@gmail.com, NOT the normal Gmail password.
-      # Set it in the dashboard.
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "465"
-      - key: SMTP_USER
-        value: emove.nig@gmail.com
-      - key: SMTP_PASS
-        sync: false
-      - key: EMAIL_FROM
-        value: "LISS11' Alumni <emove.nig@gmail.com>"
-      # Inbox that receives contact-form notifications (staging). Production
-      # uses lissclass11@gmail.com. Requires SMTP_PASS set for mail to send.
-      - key: CONTACT_TO
-        value: emove.nig@gmail.com
-      # Alternative provider, unused while SMTP_* is set. Needs a verified
-      # sending domain in Resend; leave blank when using Gmail SMTP.
+      # --- Email delivery: Resend (HTTP API) ---
+      # Render blocks outbound SMTP, so email goes through Resend rather than
+      # Gmail SMTP. Set RESEND_API_KEY (starts with "re_") in the dashboard.
+      # To send to any recipient, verify a domain in Resend and point EMAIL_FROM
+      # at it (e.g. no-reply@liss11.org); the default onboarding@resend.dev
+      # sender only reaches the email you registered the Resend account with.
       - key: RESEND_API_KEY
         sync: false
+      - key: EMAIL_FROM
+        value: "LISS11' Alumni <onboarding@resend.dev>"
+      # Inbox that receives contact-form notifications (staging). Production
+      # uses lissclass11@gmail.com.
+      - key: CONTACT_TO
+        value: emove.nig@gmail.com
       # Paystack secret key (sk_test_... on staging). Used to start transactions
       # and to verify webhook signatures. Set in the dashboard. Also add the
       # webhook URL https://liss11-api-staging.onrender.com/payments/webhook in
