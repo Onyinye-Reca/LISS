@@ -18,6 +18,11 @@ export class MemberRepository {
     return this.prisma.member.findUnique({ where: { id } });
   }
 
+  /** All members, oldest first, for the super-admin management table. */
+  listAll(): Promise<Member[]> {
+    return this.prisma.member.findMany({ orderBy: { createdAt: "asc" } });
+  }
+
   create(data: {
     firstName: string;
     lastName: string;
@@ -56,5 +61,41 @@ export class MemberRepository {
     // Cast to satisfy Prisma's generated enum type. Caller should validate the
     // role value (we validate at the controller level with Zod).
     return this.prisma.member.update({ where: { id }, data: { role: role as any } });
+  }
+
+  /** Admin override of a member's verified state. */
+  setVerified(id: string, verified: boolean): Promise<Member> {
+    return this.prisma.member.update({ where: { id }, data: { verified } });
+  }
+
+  /**
+   * Activate/deactivate a member. Deactivating also bumps tokenVersion, which
+   * invalidates any outstanding JWT sessions immediately (they can't log back
+   * in either, per the login `approved` check).
+   */
+  setApproved(id: string, approved: boolean): Promise<Member> {
+    return this.prisma.member.update({
+      where: { id },
+      data: approved
+        ? { approved: true }
+        : { approved: false, tokenVersion: { increment: 1 } },
+    });
+  }
+
+  /**
+   * Counts a member's audit-bearing history. Members with votes or payments
+   * must not be hard-deleted (election/financial integrity) - deactivate them.
+   */
+  async historyCounts(id: string): Promise<{ votes: number; payments: number }> {
+    const [votes, payments] = await Promise.all([
+      this.prisma.vote.count({ where: { memberId: id } }),
+      this.prisma.payment.count({ where: { memberId: id } }),
+    ]);
+    return { votes, payments };
+  }
+
+  /** Hard-deletes a member. Cascades tokens + RSVPs; caller guards history. */
+  delete(id: string): Promise<Member> {
+    return this.prisma.member.delete({ where: { id } });
   }
 }

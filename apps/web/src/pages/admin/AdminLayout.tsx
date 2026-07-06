@@ -1,8 +1,11 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Role } from "@liss11/shared";
 import { useAuth } from "../../auth/AuthContext";
 
-const navItems = [
+// `role` limits an item to a single role; undefined means all admin roles.
+const navItems: { to: string; label: string; end: boolean; role?: Role }[] = [
   { to: "/admin", label: "Dashboard", end: true },
+  { to: "/admin/members", label: "Members", end: false, role: Role.SUPER_ADMIN },
   { to: "/admin/excos", label: "EXCOS", end: false },
   { to: "/admin/bot", label: "Board of Trustees", end: false },
   { to: "/admin/regions", label: "Regions", end: false },
@@ -32,7 +35,9 @@ export default function AdminLayout() {
       <aside className="bg-maroon text-white md:w-60 md:min-h-screen">
         <div className="px-5 py-4 text-lg font-bold">LISS11' Admin</div>
         <nav className="px-3 pb-4">
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => !item.role || member?.role === item.role)
+            .map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
