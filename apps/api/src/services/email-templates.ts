@@ -28,8 +28,7 @@ function layout(heading: string, body: string, ctaLabel: string, ctaUrl: string)
             <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:${INK};">${body}</p>
             <a href="${ctaUrl}" style="display:inline-block;background:${GOLD};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 24px;border-radius:8px;">${ctaLabel}</a>
             <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:${INK}99;">
-              If the button doesn't work, paste this link into your browser:<br/>
-              <a href="${ctaUrl}" style="color:${MAROON};word-break:break-all;">${ctaUrl}</a>
+              If the button doesn't work, <a href="${ctaUrl}" style="color:${MAROON};font-weight:600;">click here</a>.
             </p>
           </td></tr>
           <tr><td style="padding:16px 24px;border-top:1px solid ${GOLD}22;">
