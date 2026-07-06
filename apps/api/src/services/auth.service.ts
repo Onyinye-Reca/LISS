@@ -8,6 +8,7 @@ import { MemberRepository } from "../repositories/member.repository";
 import { VerificationTokenRepository } from "../repositories/verification-token.repository";
 import { PasswordResetTokenRepository } from "../repositories/password-reset-token.repository";
 import type { EmailService } from "./email.service";
+import { captureError } from "../instrument";
 
 const BCRYPT_COST = 12; // PRD 7.2
 const TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24h JWT, PRD 3.3
@@ -76,7 +77,14 @@ export class AuthService {
 
     const apiBase = process.env.API_BASE_URL ?? "http://localhost:4000";
     const verifyUrl = `${apiBase}/auth/verify?token=${raw}`;
-    await this.email.sendVerification(email, verifyUrl);
+    try {
+      await this.email.sendVerification(email, verifyUrl);
+    } catch (err) {
+      // Delivery is best-effort: the token is already stored, so a failed send
+      // (e.g. SMTP blocked on the host) must not fail registration. The user
+      // can request a fresh link via "resend verification".
+      captureError(err);
+    }
   }
 
   async register(input: RegisterInput): Promise<MemberView> {
@@ -162,7 +170,13 @@ export class AuthService {
 
     const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
     const resetUrl = `${webOrigin}/reset-password?token=${raw}`;
-    await this.email.sendPasswordReset(member.email, resetUrl);
+    try {
+      await this.email.sendPasswordReset(member.email, resetUrl);
+    } catch (err) {
+      // Best-effort delivery (see issueVerification); never surface send
+      // failures here - they'd also leak whether the address exists.
+      captureError(err);
+    }
   }
 
   /**
