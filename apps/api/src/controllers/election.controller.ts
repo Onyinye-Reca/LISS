@@ -1,5 +1,6 @@
 import { Response } from "express";
 import rateLimit from "express-rate-limit";
+import multer, { MulterError } from "multer";
 import {
   controller,
   httpGet,
@@ -26,6 +27,7 @@ import {
   ElectionWithCount,
 } from "../repositories/election.repository";
 import { ElectionService, ElectionError } from "../services/election.service";
+import type { StorageService } from "../services/storage.service";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, requireRole } from "../middleware/auth";
 import type { AuthedRequest } from "../middleware/auth";
@@ -36,6 +38,7 @@ function toSummary(e: ElectionWithCount, hasVoted: boolean): ElectionSummary {
     id: e.id,
     title: e.title,
     isOpen: e.isOpen,
+    resultsPublished: e.resultsPublished,
     opensAt: e.opensAt ? e.opensAt.toISOString() : null,
     closesAt: e.closesAt ? e.closesAt.toISOString() : null,
     positionCount: e._count.positions,
@@ -48,6 +51,7 @@ function toDetail(e: ElectionWithBallot, hasVoted: boolean): ElectionDetail {
     id: e.id,
     title: e.title,
     isOpen: e.isOpen,
+    resultsPublished: e.resultsPublished,
     opensAt: e.opensAt ? e.opensAt.toISOString() : null,
     closesAt: e.closesAt ? e.closesAt.toISOString() : null,
     positions: e.positions.map((p) => ({
@@ -57,6 +61,7 @@ function toDetail(e: ElectionWithBallot, hasVoted: boolean): ElectionDetail {
         id: c.id,
         name: c.name,
         manifesto: c.manifesto,
+        photoUrl: c.photoUrl,
       })),
     })),
     hasVoted,
@@ -68,6 +73,16 @@ const manageGuards = [requireAuth, requireRole(...ELECTION_ROLES)] as const;
 // Curb vote spam (PRD 7.2). Per-IP; a member votes once per election anyway.
 const voteLimiter = rateLimit({ windowMs: 60 * 1000, limit: 10, standardHeaders: true });
 
+// Candidate photo upload (images only, 5 MB).
+const candidatePhotoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) =>
+    ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error("Only JPG, PNG, or WebP images are allowed")),
+}).single("file");
+
 const code = (err: unknown) => (err as { code?: string }).code;
 
 @controller("/elections")
@@ -75,7 +90,31 @@ export class ElectionController {
   constructor(
     @inject(TYPES.ElectionRepository) private repo: ElectionRepository,
     @inject(TYPES.ElectionService) private service: ElectionService,
+    @inject(TYPES.StorageService) private storage: StorageService,
   ) {}
+
+  // EC-scoped candidate photo upload (keeps the committee isolated from the
+  // general /admin/uploads content endpoint, PRD 4.11).
+  @httpPost("/candidate-photo", ...manageGuards)
+  async candidatePhoto(req: AuthedRequest, res: Response) {
+    try {
+      await new Promise<void>((resolve, reject) =>
+        candidatePhotoUpload(req as never, res, (err) => (err ? reject(err) : resolve())),
+      );
+    } catch (err) {
+      const status = err instanceof MulterError && err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+      return res.status(status).json({ error: err instanceof Error ? err.message : "Invalid upload" });
+    }
+    const file = (req as unknown as { file?: Express.Multer.File }).file;
+    if (!file) return res.status(400).json({ error: "No file provided" });
+    try {
+      const url = await this.storage.uploadImage(file, "candidates");
+      res.json({ url });
+    } catch (err) {
+      captureError(err);
+      res.status(500).json({ error: "Upload failed" });
+    }
+  }
 
   // --- Reads (any logged-in member) ---
 
@@ -111,12 +150,32 @@ export class ElectionController {
     }
   }
 
+  // Full audit trail as CSV (Electoral Committee / admin only, PRD 4.11).
+  @httpGet("/:id/audit.csv", ...manageGuards)
+  async audit(req: AuthedRequest, res: Response) {
+    try {
+      const csv = await this.service.auditCsv(req.params.id);
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="election-${req.params.id}-audit.csv"`,
+      );
+      res.send(csv);
+    } catch (err) {
+      if (err instanceof ElectionError) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      captureError(err);
+      res.status(500).json({ error: "Could not export audit log" });
+    }
+  }
+
   // --- Voting (any logged-in member) ---
 
   @httpPost("/:id/vote", voteLimiter, requireAuth, validateBody(VoteSchema))
   async vote(req: AuthedRequest, res: Response) {
     try {
-      await this.service.castBallot(req.auth!.memberId, req.params.id, req.body);
+      await this.service.castBallot(req.auth!.memberId, req.params.id, req.body, req.ip ?? null);
       res.json({ ok: true });
     } catch (err) {
       if (err instanceof ElectionError) {
@@ -170,6 +229,7 @@ export class ElectionController {
       const data: Prisma.ElectionUncheckedUpdateInput = {};
       if (b.title !== undefined) data.title = b.title;
       if (b.isOpen !== undefined) data.isOpen = b.isOpen;
+      if (b.resultsPublished !== undefined) data.resultsPublished = b.resultsPublished;
       if (b.opensAt !== undefined) data.opensAt = b.opensAt ? new Date(b.opensAt) : null;
       if (b.closesAt !== undefined) data.closesAt = b.closesAt ? new Date(b.closesAt) : null;
       await this.repo.update(req.params.id, data);
@@ -244,6 +304,7 @@ export class ElectionController {
       await this.repo.createCandidate(req.params.positionId, {
         name: req.body.name,
         manifesto: req.body.manifesto ?? null,
+        photoUrl: req.body.photoUrl ?? null,
       });
       res.status(201).json({ ok: true });
     } catch (err) {

@@ -19,8 +19,16 @@ export class PaymentRepository {
     type: PaymentType;
     amount: number; // kobo
     reference: string;
+    year: number | null; // dues year; null for donations
   }): Promise<Payment> {
     return this.prisma.payment.create({ data });
+  }
+
+  /** A member's successful DUES payment for a given year, if any. */
+  successfulDues(memberId: string, year: number): Promise<Payment | null> {
+    return this.prisma.payment.findFirst({
+      where: { memberId, type: "DUES", status: "SUCCESS", year },
+    });
   }
 
   findByReference(reference: string): Promise<Payment | null> {

@@ -16,6 +16,8 @@ function toView(map: Record<string, string>): SiteSettingsView {
   return {
     heroVideoUrl: map.heroVideoUrl ?? null,
     heroPosterUrl: map.heroPosterUrl ?? null,
+    annualDuesNaira: map.annualDuesNaira ? Number(map.annualDuesNaira) : null,
+    constitutionUrl: map.constitutionUrl ?? null,
   };
 }
 
@@ -35,7 +37,14 @@ export class SiteSettingController {
 
   @httpPut("/", ...writeGuards, validateBody(SiteSettingsUpdateSchema))
   async update(
-    req: { body: { heroVideoUrl?: string | null; heroPosterUrl?: string | null } },
+    req: {
+      body: {
+        heroVideoUrl?: string | null;
+        heroPosterUrl?: string | null;
+        constitutionUrl?: string | null;
+        annualDuesNaira?: number | null;
+      };
+    },
     res: Response,
   ) {
     try {
@@ -46,6 +55,13 @@ export class SiteSettingController {
       };
       await apply("heroVideoUrl", req.body.heroVideoUrl);
       await apply("heroPosterUrl", req.body.heroPosterUrl);
+      await apply("constitutionUrl", req.body.constitutionUrl);
+      if (req.body.annualDuesNaira !== undefined) {
+        await apply(
+          "annualDuesNaira",
+          req.body.annualDuesNaira === null ? null : String(req.body.annualDuesNaira),
+        );
+      }
       res.json({ settings: toView(await this.repo.getMap()) });
     } catch (err) {
       captureError(err);

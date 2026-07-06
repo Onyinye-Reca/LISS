@@ -68,20 +68,23 @@ function escapeHtml(s: string): string {
 export function contactNotificationEmail(submission: {
   name: string;
   email: string;
+  subject?: string | null;
   message: string;
 }): EmailContent {
   const name = escapeHtml(submission.name);
   const email = escapeHtml(submission.email);
+  const subjectLabel = submission.subject ?? "General";
+  const subject = escapeHtml(subjectLabel);
   const message = escapeHtml(submission.message).replace(/\n/g, "<br/>");
   return {
-    subject: `New contact message from ${submission.name}`,
+    subject: `[${subjectLabel}] New contact message from ${submission.name}`,
     html: layout(
       "New contact message",
-      `<strong>${name}</strong> &lt;${email}&gt; wrote:<br/><br/>${message}`,
+      `<strong>${name}</strong> &lt;${email}&gt; wrote about <strong>${subject}</strong>:<br/><br/>${message}`,
       `Reply to ${name}`,
       `mailto:${submission.email}`,
     ),
-    text: `New contact message from ${submission.name} <${submission.email}>:\n\n${submission.message}`,
+    text: `New contact message from ${submission.name} <${submission.email}> about "${subjectLabel}":\n\n${submission.message}`,
   };
 }
 

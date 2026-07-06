@@ -26,6 +26,7 @@ export class ElectionService {
     memberId: string,
     electionId: string,
     input: VoteInput,
+    ip: string | null,
   ): Promise<void> {
     const election = await this.repo.findById(electionId);
     if (!election) throw new ElectionError("Election not found", 404);
@@ -68,8 +69,31 @@ export class ElectionService {
         electionId,
         positionId: s.positionId,
         candidateId: s.candidateId,
+        ipAddress: ip,
       })),
     );
+  }
+
+  /** Builds the audit CSV for an election (Electoral Committee / admin only). */
+  async auditCsv(electionId: string): Promise<string> {
+    const election = await this.repo.findById(electionId);
+    if (!election) throw new ElectionError("Election not found", 404);
+    const rows = await this.repo.auditRows(electionId);
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const header = ["Timestamp", "Member", "Email", "Position", "Candidate", "IP"];
+    const lines = rows.map((r) =>
+      [
+        r.castAt.toISOString(),
+        `${r.member.firstName} ${r.member.lastName}`,
+        r.member.email,
+        r.position.title,
+        r.candidate.name,
+        r.ipAddress ?? "",
+      ]
+        .map((v) => esc(String(v)))
+        .join(","),
+    );
+    return [header.map(esc).join(","), ...lines].join("\n");
   }
 
   /**
@@ -80,8 +104,10 @@ export class ElectionService {
   async getResults(electionId: string, canSeeLive: boolean): Promise<ElectionResults> {
     const election = await this.repo.findById(electionId);
     if (!election) throw new ElectionError("Election not found", 404);
-    if (election.isOpen && !canSeeLive) {
-      throw new ElectionError("Results are available once voting closes", 403);
+    // Members see results only once the committee publishes them; the committee
+    // and admins can see the live tally anytime.
+    if (!election.resultsPublished && !canSeeLive) {
+      throw new ElectionError("Results have not been published yet", 403);
     }
 
     const votes = await this.repo.electionVotes(electionId);

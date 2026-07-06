@@ -20,7 +20,7 @@ export class ContactService {
   async submit(input: ContactInput): Promise<void> {
     await this.repo.create(input);
 
-    const to = process.env.CONTACT_TO;
+    const to = this.recipientFor(input.subject);
     if (to) {
       // Fire-and-forget: the message is already stored, so the user should not
       // wait on (or fail because of) email delivery. Errors are reported but
@@ -29,5 +29,14 @@ export class ContactService {
         .sendContactNotification(to, input)
         .catch((err) => captureError(err));
     }
+  }
+
+  /**
+   * Routes a submission to a subject-specific inbox when one is configured
+   * (e.g. CONTACT_TO_FINANCIALS for "Financials"), else the default CONTACT_TO.
+   */
+  private recipientFor(subject: string): string | undefined {
+    const key = `CONTACT_TO_${subject.toUpperCase()}`;
+    return process.env[key] ?? process.env.CONTACT_TO;
   }
 }
