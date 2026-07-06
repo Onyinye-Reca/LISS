@@ -8,7 +8,12 @@ import {
   CandidateCreateInput,
   VoteInput,
 } from "@liss11/shared";
-import { apiFetch } from "./api";
+import { apiFetch, API_BASE } from "./api";
+
+/** Direct link to the Electoral Committee's audit CSV (session-gated, admin). */
+export function electionAuditCsvUrl(id: string): string {
+  return `${API_BASE}/elections/${id}/audit.csv`;
+}
 
 async function ok<T>(res: Response, pick: (d: never) => T, fallback: string): Promise<T> {
   if (!res.ok) {
@@ -69,6 +74,14 @@ export async function addPosition(electionId: string, input: PositionCreateInput
 export async function deletePosition(positionId: string): Promise<void> {
   const res = await apiFetch(`/elections/positions/${positionId}`, { method: "DELETE" });
   await ok(res, () => undefined, "Could not delete position");
+}
+
+/** EC-scoped candidate photo upload (returns the stored URL). */
+export async function uploadCandidatePhoto(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await apiFetch("/elections/candidate-photo", { method: "POST", body: form });
+  return ok(res, (d: { url: string }) => d.url, "Could not upload photo");
 }
 
 export async function addCandidate(positionId: string, input: CandidateCreateInput): Promise<void> {

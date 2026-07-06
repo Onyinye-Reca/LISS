@@ -3,6 +3,7 @@ import PublicLayout from "./components/PublicLayout";
 import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
 import AboutPage from "./pages/AboutPage";
+import MembershipPage from "./pages/MembershipPage";
 import ExcosPage from "./pages/ExcosPage";
 import BotPage from "./pages/BotPage";
 import RegionsPage from "./pages/RegionsPage";
@@ -48,6 +49,8 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        {/* Public join page; shows the member dashboard once signed in. */}
+        <Route path="/membership" element={<MembershipPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/gallery/:id" element={<AlbumPage />} />
         {/* Events are public to view (per-event visibility); RSVP needs login. */}

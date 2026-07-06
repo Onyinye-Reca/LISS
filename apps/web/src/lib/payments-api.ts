@@ -1,4 +1,9 @@
-import { PaymentInitInput, PaymentView, AdminPaymentView } from "@liss11/shared";
+import {
+  PaymentInitInput,
+  PaymentView,
+  AdminPaymentView,
+  DuesStatusView,
+} from "@liss11/shared";
 import { apiFetch } from "./api";
 
 async function errorMessage(res: Response, fallback: string): Promise<string> {
@@ -34,4 +39,11 @@ export async function getAllPayments(): Promise<AdminPaymentView[]> {
   const res = await apiFetch("/payments");
   if (!res.ok) throw new Error(await errorMessage(res, "Failed to load payments"));
   return ((await res.json()) as { payments: AdminPaymentView[] }).payments;
+}
+
+/** The logged-in member's dues status for the current year. */
+export async function getDuesStatus(): Promise<DuesStatusView> {
+  const res = await apiFetch("/payments/dues-status");
+  if (!res.ok) throw new Error(await errorMessage(res, "Failed to load dues status"));
+  return ((await res.json()) as { status: DuesStatusView }).status;
 }

@@ -1,6 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
-import { PaymentView, PaymentType, PAYMENT_TYPES } from "@liss11/shared";
-import { initializePayment, getMyPayments } from "../lib/payments-api";
+import {
+  PaymentView,
+  PaymentType,
+  PAYMENT_TYPES,
+  DuesStatusView,
+} from "@liss11/shared";
+import { initializePayment, getMyPayments, getDuesStatus } from "../lib/payments-api";
 import { Button, TextField, SelectField, Alert } from "../components/ui";
 
 const TYPE_LABELS: Record<PaymentType, string> = {
@@ -16,10 +21,11 @@ const STATUS_CLASS: Record<string, string> = {
 
 export default function PayPage() {
   const [type, setType] = useState<PaymentType>("DUES");
-  const [amount, setAmount] = useState("5000");
+  const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<PaymentView[]>([]);
+  const [dues, setDues] = useState<DuesStatusView | null>(null);
 
   useEffect(() => {
     getMyPayments()
@@ -27,7 +33,19 @@ export default function PayPage() {
       .catch(() => {
         /* history is best-effort */
       });
+    getDuesStatus()
+      .then((d) => {
+        setDues(d);
+        // Pre-fill the dues amount from the configured annual figure.
+        if (d.duesAmountNaira != null) setAmount(String(d.duesAmountNaira));
+      })
+      .catch(() => {
+        /* dues status is best-effort */
+      });
   }, []);
+
+  // Paying dues is blocked once this year's dues are settled.
+  const duesPaid = type === "DUES" && dues?.paid === true;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -56,6 +74,35 @@ export default function PayPage() {
         are processed securely by Paystack.
       </p>
 
+      {dues && (
+        <div
+          className={`mt-6 rounded-xl border p-4 ${
+            dues.paid
+              ? "border-success/30 bg-success/5"
+              : "border-gold/30 bg-gold/5"
+          }`}
+        >
+          <p className="text-sm font-semibold text-maroon">
+            {dues.year} membership dues
+          </p>
+          <p className="mt-1 text-sm text-ink/70">
+            {dues.paid ? (
+              <>
+                <span className="font-medium text-success">Paid</span>
+                {dues.amountNaira != null && ` — ₦${dues.amountNaira.toLocaleString()}`}
+                . Thank you!
+              </>
+            ) : (
+              <>
+                <span className="font-medium text-gold">Not paid yet</span>
+                {dues.duesAmountNaira != null &&
+                  ` — the annual dues are ₦${dues.duesAmountNaira.toLocaleString()}.`}
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
       <form
         onSubmit={onSubmit}
         className="mt-8 space-y-4 rounded-xl border border-gold/30 bg-white p-6"
@@ -64,7 +111,14 @@ export default function PayPage() {
         <SelectField
           label="Purpose"
           value={type}
-          onChange={(e) => setType(e.target.value as PaymentType)}
+          onChange={(e) => {
+            const next = e.target.value as PaymentType;
+            setType(next);
+            // Re-apply the pre-filled dues amount when switching back to dues.
+            if (next === "DUES" && dues?.duesAmountNaira != null) {
+              setAmount(String(dues.duesAmountNaira));
+            }
+          }}
         >
           {PAYMENT_TYPES.map((t) => (
             <option key={t} value={t}>
@@ -78,12 +132,20 @@ export default function PayPage() {
           min={100}
           step={1}
           required
+          disabled={duesPaid}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
-        <Button type="submit" disabled={busy}>
-          {busy ? "Starting payment…" : "Continue to payment"}
-        </Button>
+        {duesPaid ? (
+          <p className="text-sm text-ink/60">
+            You have already paid your {dues?.year} dues. Switch to “Donation” to
+            contribute more.
+          </p>
+        ) : (
+          <Button type="submit" disabled={busy}>
+            {busy ? "Starting payment…" : "Continue to payment"}
+          </Button>
+        )}
       </form>
 
       {history.length > 0 && (

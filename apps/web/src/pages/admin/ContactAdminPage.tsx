@@ -48,7 +48,14 @@ export default function ContactAdminPage() {
             <li key={m.id} className="rounded-xl border border-gold/20 bg-white p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-nearblack">{m.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-nearblack">{m.name}</p>
+                    {m.subject && (
+                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-xs font-medium text-maroon">
+                        {m.subject}
+                      </span>
+                    )}
+                  </div>
                   <a href={`mailto:${m.email}`} className="text-sm text-maroon hover:underline">
                     {m.email}
                   </a>
