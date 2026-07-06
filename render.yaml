@@ -22,16 +22,19 @@ services:
         generateValue: true
       - key: SENTRY_DSN
         sync: false
-      # --- Email delivery: Resend (HTTP API) ---
-      # Render blocks outbound SMTP, so email goes through Resend rather than
-      # Gmail SMTP. Set RESEND_API_KEY (starts with "re_") in the dashboard.
-      # To send to any recipient, verify a domain in Resend and point EMAIL_FROM
-      # at it (e.g. no-reply@liss11.org); the default onboarding@resend.dev
-      # sender only reaches the email you registered the Resend account with.
-      - key: RESEND_API_KEY
+      # --- Email delivery: Gmail API (HTTPS, not SMTP) ---
+      # Sends through emove.nig@gmail.com via the Gmail API over port 443, which
+      # Render allows (it blocks SMTP). Set the three OAuth values in the
+      # dashboard - a one-time Google Cloud setup with scope gmail.send.
+      - key: GMAIL_CLIENT_ID
         sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
+      # Sending identity. Must be the Gmail account above (or its alias).
       - key: EMAIL_FROM
-        value: "LISS11' Alumni <onboarding@resend.dev>"
+        value: "LISS11' Alumni <emove.nig@gmail.com>"
       # Inbox that receives contact-form notifications (staging). Production
       # uses lissclass11@gmail.com.
       - key: CONTACT_TO
