@@ -27,14 +27,6 @@ const navItems: NavItem[] = [
       { to: "/announcements", label: "Announcements", auth: true },
     ],
   },
-  {
-    label: "Members",
-    children: [
-      { to: "/financials", label: "Financials", auth: true },
-      { to: "/donate", label: "Donate", auth: true },
-      { to: "/decides", label: "Decides", auth: true },
-    ],
-  },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -98,7 +90,6 @@ export default function PublicLayout() {
   const isAdmin = !!member && ADMIN_PANEL_ROLES.includes(member.role as Role);
   const items = visibleNav(!!member);
   const exploreLinks = groupChildren("Explore", !!member);
-  const membersLinks = groupChildren("Members", !!member);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
@@ -245,6 +236,7 @@ export default function PublicLayout() {
               </a>
               <div className="mt-3 flex gap-3 text-sm text-white/80">
                 <Link to="/about" className="hover:text-white">About</Link>
+                <Link to="/membership" className="hover:text-white">Membership</Link>
                 <Link to="/contact" className="hover:text-white">Contact</Link>
               </div>
             </div>
@@ -263,23 +255,6 @@ export default function PublicLayout() {
                 ))}
               </ul>
             </div>
-
-            {membersLinks.length > 0 && (
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-wide text-white/60">
-                  Members
-                </div>
-                <ul className="mt-3 space-y-2 text-sm">
-                  {membersLinks.map((l) => (
-                    <li key={l.to}>
-                      <Link to={l.to} className="text-white/80 hover:text-white">
-                        {l.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
             <div>
               <div className="text-sm font-semibold uppercase tracking-wide text-white/60">

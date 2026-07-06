@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import LoadingBar from "./components/LoadingBar";
 import PublicLayout from "./components/PublicLayout";
 import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
@@ -44,7 +45,9 @@ import SettingsAdminPage from "./pages/admin/SettingsAdminPage";
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <LoadingBar />
+      <Routes>
       {/* Pages with shared header/footer */}
       <Route element={<PublicLayout />}>
         {/* Public */}
@@ -109,6 +112,7 @@ export default function App() {
           <Route path="settings" element={<SettingsAdminPage />} />
         </Route>
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }
