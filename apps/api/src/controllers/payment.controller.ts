@@ -9,7 +9,7 @@ import {
 } from "@liss11/shared";
 import { Payment } from "@prisma/client";
 import { TYPES } from "../types";
-import { PaymentService } from "../services/payment.service";
+import { PaymentService, PaymentError } from "../services/payment.service";
 import { PaymentWithMember } from "../repositories/payment.repository";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, requireRole } from "../middleware/auth";
@@ -58,9 +58,19 @@ export class PaymentController {
       );
       res.json({ authorizationUrl, reference });
     } catch (err) {
+      if (err instanceof PaymentError) {
+        return res.status(err.status).json({ error: err.message });
+      }
       captureError(err);
       res.status(502).json({ error: "Could not start payment. Please try again." });
     }
+  }
+
+  // A member's dues status for the current year (Paid/Unpaid + configured amount).
+  @httpGet("/dues-status", requireAuth)
+  async duesStatus(req: AuthedRequest, res: Response) {
+    const status = await this.service.duesStatus(req.auth!.memberId);
+    res.json({ status });
   }
 
   // Paystack -> our server. No session; authenticated by the signature. This

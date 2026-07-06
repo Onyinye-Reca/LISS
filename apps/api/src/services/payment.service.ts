@@ -7,9 +7,21 @@ import {
   PaymentWithMember,
 } from "../repositories/payment.repository";
 import { MemberRepository } from "../repositories/member.repository";
+import { SiteSettingRepository } from "../repositories/site-setting.repository";
 import { PaystackService } from "./paystack.service";
 import type { EmailService } from "./email.service";
 import { captureError } from "../instrument";
+import type { DuesStatusView } from "@liss11/shared";
+
+/** Carries an HTTP status so the controller can map it directly. */
+export class PaymentError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+    this.name = "PaymentError";
+  }
+}
 
 @injectable()
 export class PaymentService {
@@ -18,7 +30,22 @@ export class PaymentService {
     @inject(TYPES.PaystackService) private paystack: PaystackService,
     @inject(TYPES.MemberRepository) private members: MemberRepository,
     @inject(TYPES.EmailService) private email: EmailService,
+    @inject(TYPES.SiteSettingRepository) private settings: SiteSettingRepository,
   ) {}
+
+  /** A member's dues status for the current year (PRD 4.9 / US-010). */
+  async duesStatus(memberId: string): Promise<DuesStatusView> {
+    const year = new Date().getFullYear();
+    const paid = await this.repo.successfulDues(memberId, year);
+    const map = await this.settings.getMap();
+    const duesAmountNaira = map.annualDuesNaira ? Number(map.annualDuesNaira) : null;
+    return {
+      year,
+      paid: !!paid,
+      amountNaira: paid ? paid.amount / 100 : null,
+      duesAmountNaira,
+    };
+  }
 
   private webOrigin(): string {
     return process.env.WEB_ORIGIN ?? "http://localhost:5173";
@@ -33,9 +60,18 @@ export class PaymentService {
     const member = await this.members.findById(memberId);
     if (!member) throw new Error("Member not found");
 
+    // Dues carry the current year and can only be paid once per year.
+    let year: number | null = null;
+    if (type === "DUES") {
+      year = new Date().getFullYear();
+      if (await this.repo.successfulDues(memberId, year)) {
+        throw new PaymentError(`You have already paid your ${year} dues.`, 409);
+      }
+    }
+
     const amountKobo = amountNaira * 100;
     const reference = `liss11_${randomUUID()}`;
-    await this.repo.create({ memberId, type, amount: amountKobo, reference });
+    await this.repo.create({ memberId, type, amount: amountKobo, reference, year });
 
     const { authorizationUrl } = await this.paystack.initializeTransaction({
       email: member.email,

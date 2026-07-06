@@ -81,6 +81,9 @@ model Election {
   id        String     @id @default(uuid())
   title     String
   isOpen    Boolean    @default(false) @map("is_open")
+  // Results are visible to members only once explicitly published (PRD 4.11) -
+  // distinct from merely closing voting.
+  resultsPublished Boolean @default(false) @map("results_published")
   opensAt   DateTime?  @map("opens_at")
   closesAt  DateTime?  @map("closes_at")
   createdAt DateTime   @default(now()) @map("created_at")
@@ -107,6 +110,7 @@ model Candidate {
   id         String   @id @default(uuid())
   name       String
   manifesto  String?
+  photoUrl   String?  @map("photo_url")
   position   Position @relation(fields: [positionId], references: [id])
   positionId String   @map("position_id")
 
@@ -128,6 +132,9 @@ model Vote {
   candidate   Candidate @relation(fields: [candidateId], references: [id])
   candidateId String    @map("candidate_id")
   castAt      DateTime  @default(now()) @map("cast_at")
+  // Audit trail (PRD 4.11). INSERT-only alongside the vote; the results views
+  // only ever expose aggregates, so this never de-anonymises a member.
+  ipAddress   String?   @map("ip_address")
 
   @@unique([memberId, positionId])
   @@map("votes")
@@ -139,6 +146,7 @@ model ContactMessage {
   id        String   @id @default(uuid())
   name      String
   email     String
+  subject   String?  @map("subject")
   message   String
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -164,6 +172,9 @@ model Payment {
   amount    Int // kobo (smallest currency unit), per Paystack convention
   reference String        @unique
   status    PaymentStatus @default(PENDING)
+  // Dues year (e.g. 2026); null for donations. One successful dues payment per
+  // member per year is enforced in the service (PRD 4.9 / US-010).
+  year      Int?          @map("year")
   createdAt DateTime      @default(now()) @map("created_at")
 
   @@map("payments")

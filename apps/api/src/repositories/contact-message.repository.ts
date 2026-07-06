@@ -10,6 +10,7 @@ export class ContactMessageRepository {
   create(data: {
     name: string;
     email: string;
+    subject: string | null;
     message: string;
   }): Promise<ContactMessage> {
     return this.prisma.contactMessage.create({ data });

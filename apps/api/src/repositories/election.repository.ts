@@ -62,10 +62,15 @@ export class ElectionRepository {
 
   createCandidate(
     positionId: string,
-    data: { name: string; manifesto: string | null },
+    data: { name: string; manifesto: string | null; photoUrl: string | null },
   ): Promise<Candidate> {
     return this.prisma.candidate.create({
-      data: { positionId, name: data.name, manifesto: data.manifesto },
+      data: {
+        positionId,
+        name: data.name,
+        manifesto: data.manifesto,
+        photoUrl: data.photoUrl,
+      },
     });
   }
 
@@ -131,8 +136,24 @@ export class ElectionRepository {
       electionId: string;
       positionId: string;
       candidateId: string;
+      ipAddress: string | null;
     }[],
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.vote.createMany({ data: votes });
+  }
+
+  /** Detailed vote rows for the Electoral Committee's CSV audit (PRD 4.11). */
+  auditRows(electionId: string) {
+    return this.prisma.vote.findMany({
+      where: { electionId },
+      orderBy: { castAt: "asc" },
+      select: {
+        castAt: true,
+        ipAddress: true,
+        member: { select: { firstName: true, lastName: true, email: true } },
+        position: { select: { title: true } },
+        candidate: { select: { name: true } },
+      },
+    });
   }
 }

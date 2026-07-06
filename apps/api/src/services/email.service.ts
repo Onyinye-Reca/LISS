@@ -3,6 +3,7 @@ import { injectable } from "inversify";
 export interface ContactSubmission {
   name: string;
   email: string;
+  subject?: string | null;
   message: string;
 }
 
