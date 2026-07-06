@@ -31,6 +31,29 @@ async function fetchWithTimeout(url: string, init: RequestInit): Promise<Respons
   }
 }
 
+// --- Request activity (drives the global top loading bar) ---
+// A SPA has no browser tab spinner on client-side navigation, so we track
+// in-flight API calls here and let a <LoadingBar/> subscribe.
+type ActivityListener = (active: boolean) => void;
+const activityListeners = new Set<ActivityListener>();
+let inFlight = 0;
+
+/** Subscribe to "is the app currently making requests?" Returns an unsubscribe. */
+export function onApiActivity(listener: ActivityListener): () => void {
+  activityListeners.add(listener);
+  return () => activityListeners.delete(listener);
+}
+
+function startRequest(): void {
+  inFlight += 1;
+  if (inFlight === 1) activityListeners.forEach((l) => l(true));
+}
+
+function endRequest(): void {
+  inFlight = Math.max(0, inFlight - 1);
+  if (inFlight === 0) activityListeners.forEach((l) => l(false));
+}
+
 let csrfToken: string | null = null;
 
 /** Fetches and caches a CSRF token (also sets the matching cookie). */
@@ -73,10 +96,15 @@ export async function apiFetch(
     });
   };
 
-  let res = await build();
-  if (mutating && res.status === 403) {
-    await fetchCsrf();
-    res = await build();
+  startRequest();
+  try {
+    let res = await build();
+    if (mutating && res.status === 403) {
+      await fetchCsrf();
+      res = await build();
+    }
+    return res;
+  } finally {
+    endRequest();
   }
-  return res;
 }
