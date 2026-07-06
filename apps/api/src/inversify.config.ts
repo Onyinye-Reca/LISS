@@ -17,6 +17,7 @@ import { SiteSettingRepository } from "./repositories/site-setting.repository";
 import { AuthService } from "./services/auth.service";
 import { ContactService } from "./services/contact.service";
 import { ConsoleEmailService } from "./services/email.service";
+import { GmailApiEmailService } from "./services/gmail-email.service";
 import { ResendEmailService } from "./services/resend-email.service";
 import { SmtpEmailService } from "./services/smtp-email.service";
 import {
@@ -66,7 +67,15 @@ export function buildContainer(): Container {
 
   // Use real email when configured; otherwise log links to the console so
   // local dev needs no credentials (PRD section 8 + Group C plan).
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (
+    process.env.GMAIL_CLIENT_ID &&
+    process.env.GMAIL_CLIENT_SECRET &&
+    process.env.GMAIL_REFRESH_TOKEN
+  ) {
+    container.bind(TYPES.EmailService).to(GmailApiEmailService);
+    // eslint-disable-next-line no-console
+    console.log("[email] using Gmail API");
+  } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     container.bind(TYPES.EmailService).to(SmtpEmailService);
     // eslint-disable-next-line no-console
     console.log(`[email] using SMTP (${process.env.SMTP_HOST})`);

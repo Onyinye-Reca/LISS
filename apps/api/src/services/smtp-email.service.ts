@@ -26,6 +26,7 @@ import {
 export class SmtpEmailService implements EmailService {
   private readonly transporter: ReturnType<typeof nodemailer.createTransport>;
   private readonly from: string;
+  private readonly replyTo?: string;
 
   constructor() {
     const host = process.env.SMTP_HOST;
@@ -51,6 +52,8 @@ export class SmtpEmailService implements EmailService {
     // Gmail only lets you send as the authenticated account (or its aliases),
     // so EMAIL_FROM should use SMTP_USER's address. Falls back to it.
     this.from = process.env.EMAIL_FROM ?? user;
+    // Replies to member-facing emails route here (e.g. emove.nig@gmail.com).
+    this.replyTo = process.env.EMAIL_REPLY_TO;
   }
 
   private async send(
@@ -69,11 +72,11 @@ export class SmtpEmailService implements EmailService {
   }
 
   sendVerification(to: string, verifyUrl: string): Promise<void> {
-    return this.send(to, verificationEmail(verifyUrl));
+    return this.send(to, verificationEmail(verifyUrl), this.replyTo);
   }
 
   sendPasswordReset(to: string, resetUrl: string): Promise<void> {
-    return this.send(to, passwordResetEmail(resetUrl));
+    return this.send(to, passwordResetEmail(resetUrl), this.replyTo);
   }
 
   sendContactNotification(
@@ -85,6 +88,6 @@ export class SmtpEmailService implements EmailService {
   }
 
   sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void> {
-    return this.send(to, paymentReceiptEmail(receipt));
+    return this.send(to, paymentReceiptEmail(receipt), this.replyTo);
   }
 }

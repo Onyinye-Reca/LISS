@@ -21,6 +21,7 @@ import {
 export class ResendEmailService implements EmailService {
   private readonly client: Resend;
   private readonly from: string;
+  private readonly replyTo?: string;
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
@@ -28,6 +29,9 @@ export class ResendEmailService implements EmailService {
     this.client = new Resend(apiKey);
     // e.g. "LISS11' Alumni <no-reply@liss11.org>"
     this.from = process.env.EMAIL_FROM ?? "LISS11' Alumni <onboarding@resend.dev>";
+    // Replies to member-facing emails route here (e.g. emove.nig@gmail.com), so
+    // the "from" can be a branded domain while the association still gets replies.
+    this.replyTo = process.env.EMAIL_REPLY_TO;
   }
 
   private async send(
@@ -49,11 +53,11 @@ export class ResendEmailService implements EmailService {
   }
 
   sendVerification(to: string, verifyUrl: string): Promise<void> {
-    return this.send(to, verificationEmail(verifyUrl));
+    return this.send(to, verificationEmail(verifyUrl), this.replyTo);
   }
 
   sendPasswordReset(to: string, resetUrl: string): Promise<void> {
-    return this.send(to, passwordResetEmail(resetUrl));
+    return this.send(to, passwordResetEmail(resetUrl), this.replyTo);
   }
 
   sendContactNotification(to: string, submission: ContactSubmission): Promise<void> {
@@ -62,6 +66,6 @@ export class ResendEmailService implements EmailService {
   }
 
   sendPaymentReceipt(to: string, receipt: PaymentReceipt): Promise<void> {
-    return this.send(to, paymentReceiptEmail(receipt));
+    return this.send(to, paymentReceiptEmail(receipt), this.replyTo);
   }
 }
